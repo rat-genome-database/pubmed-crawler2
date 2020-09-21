@@ -48,11 +48,11 @@ public class PubMedLibrary {
 
 	public static void main(String[] args) throws Exception {
 		args=new String[4];
-	args[0]="crawlByDate";
+	/*args[0]="crawlByDate";
 		args[1]="src/..";
 	args[2]="2015/10/16";
 		args[3]="2015/10/17";
-		
+	*/
 		crawlByDate(args);
 
 	}
