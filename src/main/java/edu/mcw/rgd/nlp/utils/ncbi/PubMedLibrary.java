@@ -47,8 +47,8 @@ public class PubMedLibrary {
 	protected static DateFormat FILE_NAME_DF = new SimpleDateFormat("yyyy_MM_dd");
 
 	public static void main(String[] args) throws Exception {
-		args=new String[4];
-	/*args[0]="crawlByDate";
+	/*	args=new String[4];
+	args[0]="crawlByDate";
 		args[1]="src/..";
 	args[2]="2015/10/16";
 		args[3]="2015/10/17";
@@ -60,7 +60,8 @@ public class PubMedLibrary {
 	public static void crawlByDate(String[] args) throws Exception {
 
 		String path = args[1];
-		Date startDate = new Date(), endDate = new Date();
+
+		Date startDate = new SimpleDateFormat("yyyy/MM/dd").parse(args[2]), endDate = new SimpleDateFormat("yyyy/MM/dd").parse(args[3]);
 		getDates(args, 2, startDate, endDate);
 
 		// configure log4j logger for pubmed crawler
@@ -331,6 +332,7 @@ public class PubMedLibrary {
 	}
 
 	public void setPathDoc(String pathDoc) throws Exception {
+
 		this.pathDoc = pathDoc + ((pathDoc.charAt(pathDoc.length() - 1) == '/') ?  "" : "/");
 
 		fileList.setFilePath(this.pathDoc + "file_list.txt", true);
