@@ -1,4 +1,4 @@
-/*package edu.mcw.rgd.hadoop;
+package edu.mcw.rgd.hadoop;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.hadoop.conf.Configuration;
@@ -14,8 +14,8 @@ import java.io.*;
  * Time: 11:04 AM
  * To change this template use File | Settings | File Templates.
  */
-/*public class HdfsTool {
-
+public class HdfsTool {
+/*
 	public static Configuration config = new Configuration();
 
 	public HdfsTool (){
@@ -97,5 +97,5 @@ import java.io.*;
 			System.out.println(msg);
 		}
 	}
-}
 */
+}
