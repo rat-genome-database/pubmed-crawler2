@@ -1,0 +1,21 @@
+[2015-08-05 14:36:17,073][INFO ][node                     ] [White Pilgrim] version[1.3.4], pid[4520], build[a70f3cc/2014-09-30T09:07:17Z]
+[2015-08-05 14:36:17,074][INFO ][node                     ] [White Pilgrim] initializing ...
+[2015-08-05 14:36:17,077][INFO ][plugins                  ] [White Pilgrim] loaded [], sites []
+[2015-08-05 14:36:18,377][INFO ][node                     ] [White Pilgrim] initialized
+[2015-08-05 14:36:18,378][INFO ][node                     ] [White Pilgrim] starting ...
+[2015-08-05 14:36:18,611][INFO ][transport                ] [White Pilgrim] bound_address {inet[/0:0:0:0:0:0:0:0:9300]}, publish_address {inet[/141.106.71.131:9300]}
+[2015-08-05 14:36:18,899][INFO ][discovery                ] [White Pilgrim] elasticsearch/DFmhsiVOQ_qKy6vWIpVlWg
+[2015-08-05 14:36:21,911][INFO ][cluster.service          ] [White Pilgrim] new_master [White Pilgrim][DFmhsiVOQ_qKy6vWIpVlWg][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]], reason: zen-disco-join (elected_as_master)
+[2015-08-05 14:36:22,027][INFO ][http                     ] [White Pilgrim] bound_address {inet[/0:0:0:0:0:0:0:0:9200]}, publish_address {inet[/141.106.71.131:9200]}
+[2015-08-05 14:36:22,028][INFO ][node                     ] [White Pilgrim] started
+[2015-08-05 14:36:22,282][INFO ][gateway                  ] [White Pilgrim] recovered [1] indices into cluster_state
+[2015-08-05 14:38:23,728][INFO ][cluster.service          ] [White Pilgrim] added {[Carnage][yXMGZy2CRM6CKn_KskrMYA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Carnage][yXMGZy2CRM6CKn_KskrMYA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-05 14:39:52,603][INFO ][cluster.service          ] [White Pilgrim] removed {[Carnage][yXMGZy2CRM6CKn_KskrMYA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Carnage][yXMGZy2CRM6CKn_KskrMYA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)
+[2015-08-05 15:28:32,371][INFO ][cluster.metadata         ] [White Pilgrim] [pmc_trec_final] creating index, cause [auto(bulk api)], shards [5]/[1], mappings []
+[2015-08-05 15:28:32,492][INFO ][cluster.metadata         ] [White Pilgrim] [pmc_trec_final] update_mapping [pmc_trec_final_type] (dynamic)
+[2015-08-05 15:30:59,446][INFO ][cluster.service          ] [White Pilgrim] added {[Manikin][ufEhXYbdTG2WKinBc5KgGw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Manikin][ufEhXYbdTG2WKinBc5KgGw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-05 15:32:28,818][INFO ][cluster.service          ] [White Pilgrim] removed {[Manikin][ufEhXYbdTG2WKinBc5KgGw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Manikin][ufEhXYbdTG2WKinBc5KgGw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)
+[2015-08-05 15:34:35,136][INFO ][cluster.service          ] [White Pilgrim] added {[Thin Man][4PygMn4wT5WhJ0MbGtB5GQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Thin Man][4PygMn4wT5WhJ0MbGtB5GQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-05 15:36:11,034][INFO ][cluster.service          ] [White Pilgrim] removed {[Thin Man][4PygMn4wT5WhJ0MbGtB5GQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Thin Man][4PygMn4wT5WhJ0MbGtB5GQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)
+[2015-08-05 15:36:20,370][INFO ][cluster.service          ] [White Pilgrim] added {[Nightcrawler][Sr_7ElgtTFG_cUU493q9rw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Nightcrawler][Sr_7ElgtTFG_cUU493q9rw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-05 15:40:26,084][INFO ][cluster.service          ] [White Pilgrim] removed {[Nightcrawler][Sr_7ElgtTFG_cUU493q9rw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Nightcrawler][Sr_7ElgtTFG_cUU493q9rw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)

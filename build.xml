@@ -1,0 +1,150 @@
+<project name="PubmedCrawler2" default="dist" basedir=".">
+
+    <property name="svn.head.revision" value="17116"/>
+    <property name="bin.dir" value="scripts"/>
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="classes"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="dist.dir" value="dist"/>
+	<property name="download.dir" value="download"/>
+	<property name="PMCPapers.dir" value="PMCPapers"/>
+	<property name="PubMedIDs.dir" value="PubMedIDs"/>
+	<property name="prop.dir" value="properties"/>
+	<property name="logs.dir" value="logs"/>
+	<property name="download-logs.dir" value="download-logs"/>
+	<property name="name" value="PubmedCrawler2"/>
+
+
+    <path id="master-classpath">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- Remove old build files -->
+	<target name="clean" description="Clean output directories">
+	        <delete dir="${build.dir}" failonerror="false"/>
+            <delete dir="${dist.dir}" failonerror="false"/>
+	        <delete file="${lib.dir}/${name}.jar" failonerror="false"/>
+	 </target>
+
+    <!--Prepare for build -->
+    <target name="prepare" depends="clean" description="Prepare for build">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${lib.dir}"/>
+    	<mkdir dir="${logs.dir}"/>
+        <mkdir dir="${prop.dir}"/>
+		<mkdir dir="${download.dir}"/>
+		<mkdir dir="${download-logs.dir}"/>
+		<mkdir dir="${PubMedIDs.dir}"/>
+		<mkdir dir="${PMCPapers.dir}"/>
+    </target>
+
+    <!-- Compile all of our class files -->
+    <target name="build" depends="prepare" description="Compile main source tree java files and build war file">
+        <javac destdir="${build.dir}" target="1.7" source="1.7" debug="true"
+               deprecation="false" optimize="false" failonerror="true">
+            <src path="${src.dir}"/>
+            <classpath refid="master-classpath"/>
+        </javac>
+
+       <!-- automatically create manifest.file -->
+       <delete file="MANIFEST.FM"/>
+       <tstamp>
+          <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+       </tstamp>
+       <pathconvert property="mf.classpath" pathsep=" " dirsep="/">
+           <path refid="master-classpath" />
+           <chainedmapper>
+               <flattenmapper />  
+	           <globmapper from="*.jar" to="lib/*.jar" />
+           </chainedmapper>
+       </pathconvert>
+       <manifest file="MANIFEST.FM">
+           <attribute name="Main-Class" value="edu.mcw.rgd.nlp.utils.ncbi.PubMedLibrary"/>
+           <attribute name="Built-By" value="${user.name}"/>
+           <attribute name="Built-Date" value="${TODAY}"/>
+           <attribute name="Class-Path" value="${mf.classpath}"/>
+           <attribute name="RGD-Svn-Revision" value="${svn.head.revision}"/>
+       </manifest>
+       <jar destfile="${lib.dir}/${name}.jar" manifest="MANIFEST.FM">
+           <fileset dir="${build.dir}"/>
+       </jar>
+        <delete file="MANIFEST.FM"/>
+    </target>
+
+    <!-- create distribution directory -->
+    <target name="dist" depends="build" description="Create distribution directory with files ready for deployment">
+        <mkdir dir="${dist.dir}"/>
+        <copy todir="${dist.dir}">
+            <fileset dir="${bin.dir}">
+                <include name="*.sh" />
+            </fileset>
+        </copy>
+		
+		<mkdir dir="${download.dir}"/>
+		<copy todir="${download.dir}">
+            <fileset dir="${download.dir}"/>
+        </copy>
+		
+		<mkdir dir="${download-logs.dir}"/>
+		<copy todir="${download-logs.dir}">
+            <fileset dir="${download-logs.dir}"/>
+        </copy>
+		
+		<mkdir dir="${dist.dir}/${prop.dir}"/>
+        <copy todir="${dist.dir}/${prop.dir}">
+            <fileset dir="${prop.dir}"/>
+        </copy>
+        <mkdir dir="${dist.dir}/${lib.dir}"/>
+        <mkdir dir="${dist.dir}/${logs.dir}"/>
+        <copy todir="${dist.dir}/${lib.dir}">
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </copy>
+        <move todir="${dist.dir}" file="${dist.dir}/${lib.dir}/${name}.jar"/>
+        
+
+    </target>
+
+    <target name="dist+docs" depends="dist" description="Create distribution with javadoc">
+        <mkdir dir="docs"/>
+        <javadoc
+               destdir="docs/${name}"
+               author="true"
+               version="true"
+               use="true"
+               windowtitle="${name}">
+
+        <classpath refid="master-classpath"/>
+        <fileset dir="src" defaultexcludes="yes">
+
+        </fileset>
+      </javadoc>
+    </target>
+
+    <target name="update_rgdcore" description="Copy rgdcore_1.1.3.jar from rgdcore project to lib directory">
+        <copy file="../../../web/java/rgdcore/trunk/dist/rgdcore_1.1.3.jar" tofile="${lib.dir}/rgdcore_1.1.3.jar"/>
+    </target>
+	<target name="create-jar">
+	        <jar destfile="dist/PubmedCrawler.jar" filesetmanifest="mergewithoutmain">
+	            <manifest>
+	                <attribute name="Class-Path" value="."/>
+	            </manifest>
+	            <fileset dir="bin"/>
+
+	<zipfileset excludes="META-INF/*.SF" src="lib/commons-io-2.4.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/commons-logging-1.1.1.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/commons-net-2.2.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/httpclient-4.2.3.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/httpcore-4.2.2.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/jaxen-1.1.4.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/jsoup-1.8.3.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/log4j-1.2.16.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/rgdcore_1.1.3.jar"/>
+	<zipfileset excludes="META-INF/*.SF" src="lib/xom-1.2.8.jar"/>
+</jar>
+	    </target>
+	
+</project>

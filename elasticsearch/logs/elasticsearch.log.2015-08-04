@@ -1,0 +1,50 @@
+[2015-08-04 11:08:53,285][INFO ][node                     ] [Pietro Maximoff] version[1.3.4], pid[6256], build[a70f3cc/2014-09-30T09:07:17Z]
+[2015-08-04 11:08:53,286][INFO ][node                     ] [Pietro Maximoff] initializing ...
+[2015-08-04 11:08:53,289][INFO ][plugins                  ] [Pietro Maximoff] loaded [], sites []
+[2015-08-04 11:08:54,996][INFO ][node                     ] [Pietro Maximoff] initialized
+[2015-08-04 11:08:54,996][INFO ][node                     ] [Pietro Maximoff] starting ...
+[2015-08-04 11:08:55,460][INFO ][transport                ] [Pietro Maximoff] bound_address {inet[/0:0:0:0:0:0:0:0:9300]}, publish_address {inet[/141.106.71.131:9300]}
+[2015-08-04 11:08:55,852][INFO ][discovery                ] [Pietro Maximoff] elasticsearch/4Tst9jPRREW-BMMhj0uAgQ
+[2015-08-04 11:08:58,863][INFO ][cluster.service          ] [Pietro Maximoff] new_master [Pietro Maximoff][4Tst9jPRREW-BMMhj0uAgQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]], reason: zen-disco-join (elected_as_master)
+[2015-08-04 11:08:58,905][INFO ][gateway                  ] [Pietro Maximoff] recovered [0] indices into cluster_state
+[2015-08-04 11:08:58,965][INFO ][http                     ] [Pietro Maximoff] bound_address {inet[/0:0:0:0:0:0:0:0:9200]}, publish_address {inet[/141.106.71.131:9200]}
+[2015-08-04 11:08:58,966][INFO ][node                     ] [Pietro Maximoff] started
+[2015-08-04 11:09:10,625][INFO ][cluster.service          ] [Pietro Maximoff] added {[Atom-Smasher][UJTrfR79Q3KKoLCnZ-bkYw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Atom-Smasher][UJTrfR79Q3KKoLCnZ-bkYw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-04 11:09:11,003][INFO ][cluster.metadata         ] [Pietro Maximoff] [og] creating index, cause [auto(index api)], shards [5]/[1], mappings []
+[2015-08-04 11:09:11,714][INFO ][cluster.metadata         ] [Pietro Maximoff] [og] update_mapping [index_type] (dynamic)
+[2015-08-04 11:10:06,240][INFO ][cluster.service          ] [Pietro Maximoff] removed {[Atom-Smasher][UJTrfR79Q3KKoLCnZ-bkYw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Atom-Smasher][UJTrfR79Q3KKoLCnZ-bkYw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)
+[2015-08-04 11:10:12,844][INFO ][cluster.service          ] [Pietro Maximoff] added {[Tom Cassidy][Vdf-1wBUQhu5q_ouuCdpqg][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Tom Cassidy][Vdf-1wBUQhu5q_ouuCdpqg][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-04 11:10:17,090][INFO ][cluster.service          ] [Pietro Maximoff] removed {[Tom Cassidy][Vdf-1wBUQhu5q_ouuCdpqg][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Tom Cassidy][Vdf-1wBUQhu5q_ouuCdpqg][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)
+[2015-08-04 11:13:07,980][INFO ][node                     ] [Pietro Maximoff] stopping ...
+[2015-08-04 11:13:08,025][INFO ][node                     ] [Pietro Maximoff] stopped
+[2015-08-04 11:13:08,026][INFO ][node                     ] [Pietro Maximoff] closing ...
+[2015-08-04 11:13:08,029][INFO ][node                     ] [Pietro Maximoff] closed
+[2015-08-04 12:59:56,393][INFO ][node                     ] [Brian Braddock] version[1.3.4], pid[9208], build[a70f3cc/2014-09-30T09:07:17Z]
+[2015-08-04 12:59:56,393][INFO ][node                     ] [Brian Braddock] initializing ...
+[2015-08-04 12:59:56,397][INFO ][plugins                  ] [Brian Braddock] loaded [], sites []
+[2015-08-04 12:59:57,664][INFO ][node                     ] [Brian Braddock] initialized
+[2015-08-04 12:59:57,665][INFO ][node                     ] [Brian Braddock] starting ...
+[2015-08-04 12:59:57,896][INFO ][transport                ] [Brian Braddock] bound_address {inet[/0:0:0:0:0:0:0:0:9301]}, publish_address {inet[/141.106.71.131:9301]}
+[2015-08-04 12:59:58,165][INFO ][discovery                ] [Brian Braddock] elasticsearch/9Etw7eThRVG38dLxGzSVGw
+[2015-08-04 13:00:01,227][INFO ][cluster.service          ] [Brian Braddock] detected_master [Vindaloo][vATBr9heTx2CP7ZdiP4w6g][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]], added {[Vindaloo][vATBr9heTx2CP7ZdiP4w6g][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]],}, reason: zen-disco-receive(from master [[Vindaloo][vATBr9heTx2CP7ZdiP4w6g][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]]])
+[2015-08-04 13:00:01,326][INFO ][http                     ] [Brian Braddock] bound_address {inet[/0:0:0:0:0:0:0:0:9201]}, publish_address {inet[/141.106.71.131:9201]}
+[2015-08-04 13:00:01,327][INFO ][node                     ] [Brian Braddock] started
+[2015-08-04 13:00:16,416][INFO ][discovery.zen            ] [Brian Braddock] master_left [[Vindaloo][vATBr9heTx2CP7ZdiP4w6g][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]]], reason [transport disconnected (with verified connect)]
+[2015-08-04 13:00:16,419][INFO ][cluster.service          ] [Brian Braddock] master {new [Brian Braddock][9Etw7eThRVG38dLxGzSVGw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]], previous [Vindaloo][vATBr9heTx2CP7ZdiP4w6g][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]]}, removed {[Vindaloo][vATBr9heTx2CP7ZdiP4w6g][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]],}, reason: zen-disco-master_failed ([Vindaloo][vATBr9heTx2CP7ZdiP4w6g][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]])
+[2015-08-04 13:00:30,215][INFO ][cluster.service          ] [Brian Braddock] added {[Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]],}, reason: zen-disco-receive(join from node[[Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]]])
+[2015-08-04 13:58:07,398][INFO ][node                     ] [Brian Braddock] stopping ...
+[2015-08-04 13:58:07,473][INFO ][node                     ] [Brian Braddock] stopped
+[2015-08-04 13:58:07,474][INFO ][node                     ] [Brian Braddock] closing ...
+[2015-08-04 13:58:07,478][INFO ][node                     ] [Brian Braddock] closed
+[2015-08-04 13:58:24,088][INFO ][node                     ] [Bela] version[1.3.4], pid[8660], build[a70f3cc/2014-09-30T09:07:17Z]
+[2015-08-04 13:58:24,089][INFO ][node                     ] [Bela] initializing ...
+[2015-08-04 13:58:24,092][INFO ][plugins                  ] [Bela] loaded [], sites []
+[2015-08-04 13:58:25,352][INFO ][node                     ] [Bela] initialized
+[2015-08-04 13:58:25,352][INFO ][node                     ] [Bela] starting ...
+[2015-08-04 13:58:25,582][INFO ][transport                ] [Bela] bound_address {inet[/0:0:0:0:0:0:0:0:9301]}, publish_address {inet[/141.106.71.131:9301]}
+[2015-08-04 13:58:25,846][INFO ][discovery                ] [Bela] elasticsearch/a7GMonK9Rfuh5Y5Nc4hr2Q
+[2015-08-04 13:58:28,890][INFO ][cluster.service          ] [Bela] detected_master [Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]], added {[Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]],}, reason: zen-disco-receive(from master [[Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]]])
+[2015-08-04 13:58:28,983][INFO ][http                     ] [Bela] bound_address {inet[/0:0:0:0:0:0:0:0:9201]}, publish_address {inet[/141.106.71.131:9201]}
+[2015-08-04 13:58:28,985][INFO ][node                     ] [Bela] started
+[2015-08-04 14:17:52,473][INFO ][discovery.zen            ] [Bela] master_left [[Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]]], reason [transport disconnected (with verified connect)]
+[2015-08-04 14:17:52,476][INFO ][cluster.service          ] [Bela] master {new [Bela][a7GMonK9Rfuh5Y5Nc4hr2Q][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]], previous [Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]]}, removed {[Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]],}, reason: zen-disco-master_failed ([Anthropomorpho][50Tr9QocTGyyb5e74BzsOA][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]])

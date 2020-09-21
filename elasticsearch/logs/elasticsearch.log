@@ -1,0 +1,17 @@
+[2015-08-20 11:29:37,871][INFO ][node                     ] [Peter Parker] version[1.3.4], pid[4620], build[a70f3cc/2014-09-30T09:07:17Z]
+[2015-08-20 11:29:37,873][INFO ][node                     ] [Peter Parker] initializing ...
+[2015-08-20 11:29:37,880][INFO ][plugins                  ] [Peter Parker] loaded [], sites []
+[2015-08-20 11:29:42,056][INFO ][node                     ] [Peter Parker] initialized
+[2015-08-20 11:29:42,057][INFO ][node                     ] [Peter Parker] starting ...
+[2015-08-20 11:29:42,520][INFO ][transport                ] [Peter Parker] bound_address {inet[/0:0:0:0:0:0:0:0:9300]}, publish_address {inet[/141.106.71.131:9300]}
+[2015-08-20 11:29:42,970][INFO ][discovery                ] [Peter Parker] elasticsearch/DOtUCzmsTKaJpiepT_XSQQ
+[2015-08-20 11:29:46,064][INFO ][cluster.service          ] [Peter Parker] new_master [Peter Parker][DOtUCzmsTKaJpiepT_XSQQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9300]], reason: zen-disco-join (elected_as_master)
+[2015-08-20 11:29:46,180][INFO ][http                     ] [Peter Parker] bound_address {inet[/0:0:0:0:0:0:0:0:9200]}, publish_address {inet[/141.106.71.131:9200]}
+[2015-08-20 11:29:46,186][INFO ][node                     ] [Peter Parker] started
+[2015-08-20 11:29:46,948][INFO ][gateway                  ] [Peter Parker] recovered [2] indices into cluster_state
+[2015-08-20 11:35:26,893][INFO ][cluster.service          ] [Peter Parker] added {[Kick-Ass][WWdXm2nkT0Wi9JFS8oZJfw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Kick-Ass][WWdXm2nkT0Wi9JFS8oZJfw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-20 11:43:18,118][INFO ][cluster.service          ] [Peter Parker] removed {[Kick-Ass][WWdXm2nkT0Wi9JFS8oZJfw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Kick-Ass][WWdXm2nkT0Wi9JFS8oZJfw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)
+[2015-08-20 13:05:55,155][INFO ][cluster.service          ] [Peter Parker] added {[Dakimh the Enchanter][rb27X9amR6C97LTD66TmGQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Dakimh the Enchanter][rb27X9amR6C97LTD66TmGQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-20 13:07:51,903][INFO ][cluster.service          ] [Peter Parker] removed {[Dakimh the Enchanter][rb27X9amR6C97LTD66TmGQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Dakimh the Enchanter][rb27X9amR6C97LTD66TmGQ][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)
+[2015-08-20 13:08:17,325][INFO ][cluster.service          ] [Peter Parker] added {[Virginia "Pepper" Potts][dHwyqOc5TzSsDLj4r8wSMw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-receive(join from node[[Virginia "Pepper" Potts][dHwyqOc5TzSsDLj4r8wSMw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]])
+[2015-08-20 13:15:03,779][INFO ][cluster.service          ] [Peter Parker] removed {[Virginia "Pepper" Potts][dHwyqOc5TzSsDLj4r8wSMw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]],}, reason: zen-disco-node_failed([Virginia "Pepper" Potts][dHwyqOc5TzSsDLj4r8wSMw][RGD-7BVHTR1-PC][inet[/141.106.71.131:9301]]), reason transport disconnected (with verified connect)
