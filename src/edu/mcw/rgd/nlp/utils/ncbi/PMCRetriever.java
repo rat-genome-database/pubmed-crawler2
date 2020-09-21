@@ -4,7 +4,6 @@
 package edu.mcw.rgd.nlp.utils.ncbi;
 
 import java.io.FileWriter;
-import edu.mcw.rgd.hadoop.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +18,7 @@ public class PMCRetriever {
 		List<String> paperList=new ArrayList<String>();
 		HashMap<String, String> idMap=new HashMap<String, String>();
 		HashMap<String, String> idMapNon=new HashMap<String, String>();
-		HdfsTool hdfs=new HdfsTool();
+		//HdfsTool hdfs=new HdfsTool();
 		try{
 			String pmcFile=ReadWrite.read("download-logs/pmcpapers-full-paper.txt");
 			String pmcFileNon=ReadWrite.read("download-logs/pmcpapers-non-full.txt");
@@ -60,7 +59,7 @@ public class PMCRetriever {
 						fw.write(paper);
 						fw.close();
 						// --- copy to cluster gray01 -->
-				    	hdfs.copyFromLocalToHdfs("../pmcpapers/"+fileName, "pmc");
+				    	//hdfs.copyFromLocalToHdfs("../pmcpapers/"+fileName, "pmc");
 						pmcFileBuff.append("\n"+pmcId);
 					}
 					else
