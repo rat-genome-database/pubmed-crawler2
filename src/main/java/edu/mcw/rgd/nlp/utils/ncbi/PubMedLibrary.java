@@ -359,7 +359,7 @@ indexer();
 			updateRequest.setAction( UpdateRequest.ACTION.COMMIT, false, false);
 
 
-			File folder = new File("/data/");
+			File folder = new File("data/");
 			String json = "";
 			for (final File fileEntry : folder.listFiles()) {
 				try {
