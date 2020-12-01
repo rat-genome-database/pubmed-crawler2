@@ -350,7 +350,7 @@ indexer();
 		//Preparing the Solr client
 
 
-		SolrServer Solr = new HttpSolrServer("https://travis.rgd.mcw.edu:8983/solr/");
+		SolrServer Solr = new HttpSolrServer("http://localhost:8983/solr/");
 
 		try {
 //            SolrPingResponse pingResponse = Solr.ping();
