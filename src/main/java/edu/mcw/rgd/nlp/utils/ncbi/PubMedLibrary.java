@@ -55,8 +55,8 @@ public class PubMedLibrary {
 	args[2]="2015/10/16";
 		args[3]="2015/10/17";
 	*/
-		crawlByDate(args);
-
+		//crawlByDate(args);
+indexer();
 	}
 
 	public static void crawlByDate(String[] args) throws Exception {
