@@ -355,8 +355,6 @@ indexer();
 		try {
 //            SolrPingResponse pingResponse = Solr.ping();
 			//           System.out.println("Response "+ pingResponse.getResponse() + "," + pingResponse.getStatus());
-			UpdateRequest updateRequest = new UpdateRequest();
-			updateRequest.setAction( UpdateRequest.ACTION.COMMIT, false, false);
 
 
 			File folder = new File("data/");
@@ -385,6 +383,8 @@ indexer();
 						counter ++;
 					}
 					System.out.println("Documents Updated "+ counter);
+					UpdateRequest updateRequest = new UpdateRequest();
+					updateRequest.setAction( UpdateRequest.ACTION.COMMIT, false, false);
 					updateRequest.add( solr_docs);
 					UpdateResponse rsp = updateRequest.process(Solr);
 					objReader.close();
