@@ -350,7 +350,7 @@ indexer();
 		//Preparing the Solr client
 
 
-		SolrServer Solr = new HttpSolrServer("http://localhost:8983/solr/test");
+		SolrServer Solr = new HttpSolrServer("http://localhost:8983/solr/collection0");
 
 		try {
 //            SolrPingResponse pingResponse = Solr.ping();
