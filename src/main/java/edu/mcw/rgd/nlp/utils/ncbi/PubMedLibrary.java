@@ -16,6 +16,7 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.request.UpdateRequest;
+import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONObject;
@@ -350,11 +351,11 @@ indexer();
 		//Preparing the Solr client
 
 
-		SolrServer Solr = new HttpSolrServer("http://travis.rgd.mcw.edu:8983/solr/");
+		SolrServer Solr = new HttpSolrServer("http://travis.rgd.mcw.edu:8983/solr/collection1");
 
 		try {
 //            SolrPingResponse pingResponse = Solr.ping();
-			//           System.out.println("Response "+ pingResponse.getResponse() + "," + pingResponse.getStatus());
+//			System.out.println("Response "+ pingResponse.getResponse() + "," + pingResponse.getStatus());
 
 
 			File folder = new File("data/");
@@ -375,7 +376,9 @@ indexer();
 
 						while (keys.hasNext()) {
 							String key = keys.next();
-							solr_doc.addField(key, data.get(key).toString());
+							if(key.equalsIgnoreCase("p_date"))
+								solr_doc.addField(key,data.get(key).toString()+"T06:00:00Z");
+							else solr_doc.addField(key, data.get(key).toString());
 							// System.out.println(key + "," + data.get(key).toString());
 						}
 						solr_docs.add(solr_doc);
