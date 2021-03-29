@@ -6,12 +6,14 @@ import edu.mcw.rgd.common.utils.FileList;
 import edu.mcw.rgd.common.utils.HTML2XML;
 import edu.mcw.rgd.common.utils.ReadWrite;
 import edu.mcw.rgd.process.NcbiEutils;
-import edu.mcw.rgd.util.StringUtils;
+
 // newly added ---
 import edu.mcw.rgd.nlp.utils.ncbi.PMCRetriever;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.lucene.util.NumericUtils;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -19,6 +21,8 @@ import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.util.NumberUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -26,6 +30,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
 
 //import edu.mcw.rgd.indexing.IndexClass;
 
@@ -48,6 +53,7 @@ public class PubMedLibrary {
 
 	protected static String DATE_FILE_DIR = "/date_id_maps/";
 	protected static DateFormat FILE_NAME_DF = new SimpleDateFormat("yyyy_MM_dd");
+	protected static String OUT_DIR;
 
 	public static void main(String[] args) throws Exception {
 	/*	args=new String[4];
@@ -56,8 +62,29 @@ public class PubMedLibrary {
 	args[2]="2015/10/16";
 		args[3]="2015/10/17";
 	*/
-		//crawlByDate(args);
-indexer();
+		boolean index=false,preprint=false;
+		for( int i=0; i<args.length; i++ ) {
+			String arg = args[i];
+			switch (arg) {
+				case "--indexer":
+					index=true;
+					break;
+				case "--preprint":
+					preprint = true;
+					break;
+				case "--crawlByDate":
+					crawlByDate(args);
+					break;
+				case "--o":
+					OUT_DIR = args[++i];
+					break;
+			}
+		}
+
+		if(index)
+			indexer(preprint);
+
+
 	}
 
 	public static void crawlByDate(String[] args) throws Exception {
@@ -347,29 +374,38 @@ indexer();
 		return getPathDoc();
 	}
 
-	public static void indexer() throws SolrServerException, IOException {
+	public static void indexer(boolean preprint) throws SolrServerException, IOException {
 		//Preparing the Solr client
 
-
-		SolrServer Solr = new HttpSolrServer("http://hansen.rgd.mcw.edu:8080/solr/collection0");
+		SolrServer Solr;
+		if(preprint)
+		Solr = new HttpSolrServer("http://hansen.rgd.mcw.edu:8080/preprintSolr/collection0");
+		else Solr = new HttpSolrServer("http://hansen.rgd.mcw.edu:8080/solr/collection0");
 
 		try {
 //            SolrPingResponse pingResponse = Solr.ping();
 //			System.out.println("Response "+ pingResponse.getResponse() + "," + pingResponse.getStatus());
-
-
-			File folder = new File("data/");
+			File folder = new File(OUT_DIR);
 			String json = "";
+			Solr.deleteByQuery("*");
+
+			//Saving the document
+			Solr.commit();
+
 			for (final File fileEntry : folder.listFiles()) {
 				try {
 					System.out.println(fileEntry.getAbsolutePath());
+
+
 					String strCurrentLine;
 
+					//BufferedReader objReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileEntry))));
 					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
 					int counter = 0;
 					List<SolrInputDocument> solr_docs = new ArrayList<>();
 					while ((strCurrentLine = objReader.readLine()) != null) {
 						json = strCurrentLine;
+
 						JSONObject data = new JSONObject(json);
 						SolrInputDocument solr_doc = new SolrInputDocument();
 						Iterator<String> keys = data.keys();
@@ -377,12 +413,24 @@ indexer();
 						while (keys.hasNext()) {
 							String key = keys.next();
 							if(key.equalsIgnoreCase("p_date"))
-								solr_doc.addField(key,data.get(key).toString()+"T06:00:00Z");
-							else solr_doc.addField(key, data.get(key).toString());
+								solr_doc.addField(key,((JSONArray)data.get(key)).get(0)+"T06:00:00Z");
+							else {
+								if(data.get(key) instanceof JSONArray)
+								 	solr_doc.addField(key, ((JSONArray) data.get(key)).toList());
+								else solr_doc.addField(key,data.get(key));
+							}
 							// System.out.println(key + "," + data.get(key).toString());
 						}
 						solr_docs.add(solr_doc);
-						// System.out.println("Documents Updated "+ counter);
+
+						if(solr_docs.size() == 100000){
+							System.out.println("Documents Updated "+ counter);
+							UpdateRequest updateRequest = new UpdateRequest();
+							updateRequest.setAction( UpdateRequest.ACTION.COMMIT, false, false);
+							updateRequest.add( solr_docs);
+							UpdateResponse rsp = updateRequest.process(Solr);
+							solr_docs.clear();
+						}
 						counter ++;
 					}
 					System.out.println("Documents Updated "+ counter);
@@ -396,6 +444,7 @@ indexer();
 					e.printStackTrace();
 				}
 			}
+
 		}catch(Exception e){
 			e.printStackTrace();
 		}
