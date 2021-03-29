@@ -379,7 +379,7 @@ public class PubMedLibrary {
 
 		SolrServer Solr;
 		if(preprint)
-		Solr = new HttpSolrServer("http://travis.rgd.mcw.edu:8983/solr/collection1");
+		Solr = new HttpSolrServer("http://hansen.rgd.mcw.edu:8080/preprintSolr/collection0");
 		else Solr = new HttpSolrServer("http://hansen.rgd.mcw.edu:8080/solr/collection0");
 
 		try {
