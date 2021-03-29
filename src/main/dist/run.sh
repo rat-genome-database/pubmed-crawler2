@@ -3,8 +3,8 @@
 # ./run.sh 2015/01/01 2015/01/30
 #
 MYJAVA="java -Xms512m -Xmx20480m"
-APP_DIR=/rgd/pubmed
-CRAWLER_DIR=$APP_DIR/PubMedCrawler2
+APP_DIR=/home/rgddata/pipelines/PubmedCrawlerPipeline
+DATA_DIR=$APP_DIR/pubmed/
 
-cd $CRAWLER_DIR
-$MYJAVA -jar PubmedCrawler2.jar crawlByDate $APP_DIR $1 $2
+cd $APP_DIR
+$MYJAVA -jar lib/PubmedCrawler2.jar crawlByDate $DATA_DIR $1 $2
