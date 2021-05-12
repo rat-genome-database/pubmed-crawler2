@@ -379,18 +379,14 @@ public class PubMedLibrary {
 
 		SolrServer Solr;
 		if(preprint)
-		Solr = new HttpSolrServer("http://hansen.rgd.mcw.edu:8080/preprintSolr/collection0");
-		else Solr = new HttpSolrServer("http://hansen.rgd.mcw.edu:8080/solr/collection0");
+		Solr = new HttpSolrServer("http://localhost:8080/preprintSolr/collection0");
+		else Solr = new HttpSolrServer("http://localhost:8080/solr/collection0");
 
 		try {
 //            SolrPingResponse pingResponse = Solr.ping();
 //			System.out.println("Response "+ pingResponse.getResponse() + "," + pingResponse.getStatus());
 			File folder = new File(OUT_DIR);
 			String json = "";
-			Solr.deleteByQuery("*");
-
-			//Saving the document
-			Solr.commit();
 
 			for (final File fileEntry : folder.listFiles()) {
 				try {
