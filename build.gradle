@@ -12,8 +12,8 @@ apply plugin: 'application'
 // JDK 8
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-mainClassName = 'edu.mcw.rgd.nlp.utils.ncbi.PubMedLibrary'
-String myAppName = 'PubmedCrawlerPipeline'
+mainClassName = 'edu.mcw.rgd.nlp.utils.ncbi.PMCLibrary'
+String myAppName = 'PMCCrawlerPipeline'
 
 repositories {
     mavenCentral()
@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    implementation fileTree(dir: 'lib', include: '*.jar')
+    compile fileTree(dir: 'lib', include: '*.jar')
 }
 
 
@@ -37,6 +37,9 @@ jar {
                 'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
                 'Main-Class': mainClassName
         )
+    }
+    from {
+        configurations.compile.collect{it.isDirectory()?it:zipTree(it)}
     }
 }
 
