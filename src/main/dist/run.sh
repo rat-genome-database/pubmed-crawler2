@@ -4,8 +4,8 @@
 #
 . /etc/profile
 MYJAVA="java -Xms512m -Xmx20480m"
-APP_DIR=/home/rgddata/pipelines/PubmedCrawlerPipeline
-DATA_DIR=$APP_DIR/pubmed/
+APP_DIR=/home/rgddata/pipelines/PMCCrawlerPipeline
+DATA_DIR=$APP_DIR/data/
 
 cd $APP_DIR
-$MYJAVA -jar lib/PubmedCrawlerPipeline.jar --crawlByDate $DATA_DIR $1 $2
+$MYJAVA -jar lib/PMCCrawlerPipeline.jar --crawlByDate $DATA_DIR $1 $2
