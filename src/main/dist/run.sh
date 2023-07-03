@@ -1,5 +1,5 @@
 # download pubmed articles for given date range
-# f.e. to download articles from PubMed created/modified during date range Jan 01, 2015 through Jan 30, 2015
+# f.e. to download articles from PMC created/modified during date range Jan 01, 2015 through Jan 30, 2015
 # ./run.sh 2015/01/01 2015/01/30
 #
 . /etc/profile
