@@ -23,35 +23,35 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'lib', include: '*.jar')
+    implementation fileTree(dir: 'lib', include: '*.jar')
 }
 
 
 jar {
     zip64=true
-    baseName = myAppName
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
                 'Built-By': System.getProperty('user.name'),
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
-                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Class-Path': configurations.runtimeClasspath .collect { it.getName() }.join(' '),
                 'Main-Class': mainClassName
         )
     }
     from {
-        configurations.compile.collect{it.isDirectory()?it:zipTree(it)}
+        configurations.runtimeClasspath.collect{it.isDirectory()?it:zipTree(it)}
     }
 }
 
-distributions {
-    main {
-        baseName = myAppName
-    }
-}
+//distributions {
+//    main {
+//        baseName = myAppName as Distribution
+//    }
+//}
 
-task createDistro(type: Copy) {
-    def zipFile = file('build/distributions/'+myAppName+'.zip')
+tasks.register('createDistro', Copy) {
+    def zipFile = file('build/distributions/' + myAppName + '.zip')
     def outputDir = file("build/install")
 
     from zipTree(zipFile)
