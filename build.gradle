@@ -30,6 +30,7 @@ dependencies {
 
 jar {
     zip64=true
+    archivesBaseName= myAppName
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
