@@ -12,8 +12,9 @@ apply plugin: 'application'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-mainClassName = 'edu.mcw.rgd.nlp.utils.ncbi.PubMedLibrary'
 String myAppName = 'PubmedCrawlerPipeline'
+mainClassName = 'edu.mcw.rgd.nlp.utils.ncbi.PubMedLibrary'
+
 
 repositories {
     mavenCentral()
@@ -29,6 +30,7 @@ dependencies {
 
 jar {
     zip64=true
+    baseName = myAppName
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
@@ -43,7 +45,11 @@ jar {
         configurations.runtimeClasspath.collect{it.isDirectory()?it:zipTree(it)}
     }
 }
-
+distributions {
+    main {
+        distributionBaseName = myAppName
+    }
+}
 task createDistro(type: Copy) {
     def zipFile = file('build/distributions/'+myAppName+'.zip')
     def outputDir = file("build/install")
