@@ -8,10 +8,10 @@ tasks.whenTaskAdded { task ->
 }
 apply plugin: 'java'
 apply plugin: 'application'
-
 // JDK 8
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
 mainClassName = 'edu.mcw.rgd.nlp.utils.ncbi.PubMedLibrary'
 String myAppName = 'PubmedCrawlerPipeline'
 
@@ -23,26 +23,24 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'lib', include: '*.jar')
+    implementation fileTree(dir: 'lib', include: '*.jar')
 }
 
 
 jar {
-    baseName = myAppName
+    zip64=true
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
                 'Built-By': System.getProperty('user.name'),
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
-                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Class-Path': configurations.runtimeClasspath .collect { it.getName() }.join(' '),
                 'Main-Class': mainClassName
         )
     }
-}
-
-distributions {
-    main {
-        baseName = myAppName
+    from {
+        configurations.runtimeClasspath.collect{it.isDirectory()?it:zipTree(it)}
     }
 }
 

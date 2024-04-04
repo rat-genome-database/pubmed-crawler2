@@ -377,10 +377,11 @@ public class PubMedLibrary {
 	public static void indexer(boolean preprint) throws SolrServerException, IOException {
 		//Preparing the Solr client
 
+		String tempSolr="http://localhost:8080/testSolr/collection0";
 		SolrServer Solr;
 		if(preprint) {
 			Solr = new HttpSolrServer("http://localhost:8080/preprintSolr/collection0");
-		} else Solr = new HttpSolrServer("http://localhost:8080/solr/collection0");
+		} else Solr = new HttpSolrServer(tempSolr);
 		Solr.deleteByQuery("*");
 
 		//Saving the document
