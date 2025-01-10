@@ -1,27 +1,28 @@
 package edu.mcw.rgd.nlp.utils.ncbi;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
+import com.google.gson.Gson;
 import edu.mcw.rgd.common.utils.FileEntry;
-import edu.mcw.rgd.hadoop.*;
 import edu.mcw.rgd.common.utils.FileList;
-import edu.mcw.rgd.common.utils.HTML2XML;
 import edu.mcw.rgd.common.utils.ReadWrite;
+import edu.mcw.rgd.dao.impl.solr.SolrDocsDAO;
+import edu.mcw.rgd.datamodel.solr.SolrDoc;
+import edu.mcw.rgd.process.MyThreadPoolExecutor;
 import edu.mcw.rgd.process.NcbiEutils;
 
 // newly added ---
-import edu.mcw.rgd.nlp.utils.ncbi.PMCRetriever;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.lucene.util.NumericUtils;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.request.UpdateRequest;
-import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.util.NumberUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -29,8 +30,10 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.GZIPInputStream;
+import java.util.stream.Collectors;
 
 //import edu.mcw.rgd.indexing.IndexClass;
 
@@ -54,7 +57,6 @@ public class PubMedLibrary {
 	protected static String DATE_FILE_DIR = "/date_id_maps/";
 	protected static DateFormat FILE_NAME_DF = new SimpleDateFormat("yyyy_MM_dd");
 	protected static String OUT_DIR;
-
 	public static void main(String[] args) throws Exception {
 	/*	args=new String[4];
 	args[0]="crawlByDate";
@@ -374,7 +376,7 @@ public class PubMedLibrary {
 		return getPathDoc();
 	}
 
-	public static void indexer(boolean preprint) throws SolrServerException, IOException {
+	public static void indexerSolr(boolean preprint) throws SolrServerException, IOException {
 		//Preparing the Solr client
 
 		String tempSolr="http://localhost:8080/testSolr/collection0";
@@ -448,6 +450,155 @@ public class PubMedLibrary {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+
+	}
+	public static void indexer(boolean preprint) throws SolrServerException, IOException {
+		try {
+
+			File folder = new File(OUT_DIR);
+			String json = "";
+
+			List<SolrDoc> solrDocs=new ArrayList<>();
+			for (final File fileEntry : folder.listFiles()) {
+				try {
+					System.out.println(fileEntry.getAbsolutePath());
+					String strCurrentLine;
+					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
+					ObjectMapper mapper=new ObjectMapper();
+					mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+					mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
+				//	ExecutorService executor= new MyThreadPoolExecutor(10,10,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+
+					int count=0;
+					while ((strCurrentLine = objReader.readLine()) != null) {
+						json = strCurrentLine;
+						SolrDoc doc=mapper.readValue(json, SolrDoc.class);
+						insertSolrDoc(doc);
+//						solrDocs.add(doc);
+//						if(solrDocs.size()>10){
+//							batchUpdateSolrDocs(solrDocs);
+//							solrDocs=new ArrayList<>();
+//				}
+					}
+//					if(solrDocs.size()>0){
+//					batchUpdateSolrDocs(solrDocs);
+//					}
+					objReader.close();
+
+
+				} catch (FileNotFoundException e) {
+					System.out.println("An error occurred.");
+					e.printStackTrace();
+				}
+			}
+
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+	}
+	public static void insertSolrDoc(SolrDoc solrDoc) throws Exception {
+		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
+		try {
+			solrDocsDAO.insertSolrDoc(solrDoc);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+	}
+	public static void batchUpdateSolrDocs(List<SolrDoc> solrDocs) throws Exception {
+		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
+		try {
+			solrDocsDAO.insertSolrDocs(solrDocs);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+	}
+		public static void loadDocsToDB(List<SolrDoc> solrDocs) throws IOException {
+
+		List<String> fields= Arrays.asList(
+				"gene_count",
+				"mp_id",
+				"doi_s",
+				"chebi_pos",
+				"vt_id",
+				"bp_term",
+				"chebi_term",
+				"p_date",
+				"xco_term",
+				"chebi_count",
+				"rs_term",
+				"mp_term",
+				"rdo_id",
+				"nbo_pos",
+				"gene",
+				"rs_id",
+				"so_term",
+				"mp_count",
+				"vt_count",
+				"bp_id",
+				"rgd_obj_count",
+				"vt_pos",
+				"p_type",
+				"nbo_count",
+				"xco_id",
+				"p_year",
+				"authors",
+				"xco_count",
+				"rdo_count",
+				"title",
+				"nbo_term",
+				"vt_term",
+				"hp_pos",
+				"nbo_id",
+				"so_count",
+				"hp_term",
+				"so_id",
+				"rgd_obj_pos",
+				"xco_pos",
+				"rs_pos",
+				"hp_id",
+				"rdo_pos",
+				"rs_count",
+				"rgd_obj_term",
+				"abstract",
+				"pmid",
+				"bp_count",
+				"mp_pos",
+				"hp_count",
+				"xdb_id",
+				"rgd_obj_id",
+				"bp_pos",
+				"gene_pos",
+				"so_pos",
+				"rdo_term",
+				"chebi_id"
+		);
+		String sql = "insert all ";
+		StringBuilder columns=new StringBuilder();
+		for(String col:fields){
+			columns.append(col).append(",");
+		}
+
+		StringBuilder builder=new StringBuilder();
+		ObjectMapper mapper=new ObjectMapper();
+		Gson gson=new Gson();
+		//for(SolrDoc doc:solrDocs){
+			Map<String, String> docMap=mapper.readValue(gson.toJson(solrDocs.get(0)), Map.class);
+
+			builder.append(" into solr_docs (");
+			builder.append(docMap.keySet().stream().collect(Collectors.joining(",")));
+			builder.append(")");
+			builder.append(" values (");
+			builder.append(docMap.values());
+			builder.append(")");
+
+
+	//	}
+		builder.append(" select * from dual ");
+		sql+=builder.toString();
+		System.out.println(sql+"\n*********************");
 
 	}
 }
