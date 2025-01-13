@@ -15,6 +15,7 @@ import edu.mcw.rgd.process.NcbiEutils;
 
 // newly added ---
 
+import edu.mcw.rgd.process.SolrDBProcessingThread;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.solr.client.solrj.SolrServer;
@@ -64,12 +65,15 @@ public class PubMedLibrary {
 	args[2]="2015/10/16";
 		args[3]="2015/10/17";
 	*/
-		boolean index=false,preprint=false;
+		boolean index=false,preprint=false,uploadDB=false ;
 		for( int i=0; i<args.length; i++ ) {
 			String arg = args[i];
 			switch (arg) {
 				case "--indexer":
 					index=true;
+					break;
+				case "--uploadToDB":
+					uploadDB=true;
 					break;
 				case "--preprint":
 					preprint = true;
@@ -85,7 +89,8 @@ public class PubMedLibrary {
 		
 		if(index)
 			indexer(preprint);
-
+		if(uploadDB)
+			uploadToDB(preprint);
 
 	}
 
@@ -376,7 +381,7 @@ public class PubMedLibrary {
 		return getPathDoc();
 	}
 
-	public static void indexerSolr(boolean preprint) throws SolrServerException, IOException {
+	public static void indexer(boolean preprint) throws SolrServerException, IOException {
 		//Preparing the Solr client
 
 		String tempSolr="http://localhost:8080/testSolr/collection0";
@@ -452,37 +457,44 @@ public class PubMedLibrary {
 		}
 
 	}
-	public static void indexer(boolean preprint) throws SolrServerException, IOException {
+	public static void uploadToDB(boolean preprint) {
 		try {
 
 			File folder = new File(OUT_DIR);
 			String json = "";
-
+			ObjectMapper mapper=new ObjectMapper();
+			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+			mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
 			List<SolrDoc> solrDocs=new ArrayList<>();
 			for (final File fileEntry : folder.listFiles()) {
 				try {
 					System.out.println(fileEntry.getAbsolutePath());
 					String strCurrentLine;
 					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
-					ObjectMapper mapper=new ObjectMapper();
-					mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-					mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
-				//	ExecutorService executor= new MyThreadPoolExecutor(10,10,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
-					int count=0;
+					ExecutorService executor= new MyThreadPoolExecutor(10,10,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+
 					while ((strCurrentLine = objReader.readLine()) != null) {
 						json = strCurrentLine;
 						SolrDoc doc=mapper.readValue(json, SolrDoc.class);
-						insertSolrDoc(doc);
-//						solrDocs.add(doc);
-//						if(solrDocs.size()>10){
-//							batchUpdateSolrDocs(solrDocs);
-//							solrDocs=new ArrayList<>();
-//				}
+						//insertSolrDoc(doc);
+						solrDocs.add(doc);
+						if(solrDocs.size()>1000){
+							//batchUpdateSolrDocs(solrDocs);
+							Runnable workerThread=new SolrDBProcessingThread(solrDocs);
+							executor.execute(workerThread);
+							//batchUpdate(solrDocs);
+							solrDocs=new ArrayList<>();
+				}
 					}
-//					if(solrDocs.size()>0){
-//					batchUpdateSolrDocs(solrDocs);
-//					}
+					if(solrDocs.size()>0){
+					//batchUpdateSolrDocs(solrDocs);
+						//batchUpdate(solrDocs);
+						Runnable workerThread=new SolrDBProcessingThread(solrDocs);
+						executor.execute(workerThread);
+					}
+					executor.shutdown();
+					while(!executor.isTerminated()){}
 					objReader.close();
 
 
@@ -500,7 +512,7 @@ public class PubMedLibrary {
 	public static void insertSolrDoc(SolrDoc solrDoc) throws Exception {
 		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
 		try {
-			solrDocsDAO.insertSolrDoc(solrDoc);
+			solrDocsDAO.insert(solrDoc);
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -509,96 +521,11 @@ public class PubMedLibrary {
 	public static void batchUpdateSolrDocs(List<SolrDoc> solrDocs) throws Exception {
 		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
 		try {
-			solrDocsDAO.insertSolrDocs(solrDocs);
+			solrDocsDAO.batchSqlUpdate(solrDocs);
 		}catch (Exception e){
 			e.printStackTrace();
 		}
 
 	}
-		public static void loadDocsToDB(List<SolrDoc> solrDocs) throws IOException {
 
-		List<String> fields= Arrays.asList(
-				"gene_count",
-				"mp_id",
-				"doi_s",
-				"chebi_pos",
-				"vt_id",
-				"bp_term",
-				"chebi_term",
-				"p_date",
-				"xco_term",
-				"chebi_count",
-				"rs_term",
-				"mp_term",
-				"rdo_id",
-				"nbo_pos",
-				"gene",
-				"rs_id",
-				"so_term",
-				"mp_count",
-				"vt_count",
-				"bp_id",
-				"rgd_obj_count",
-				"vt_pos",
-				"p_type",
-				"nbo_count",
-				"xco_id",
-				"p_year",
-				"authors",
-				"xco_count",
-				"rdo_count",
-				"title",
-				"nbo_term",
-				"vt_term",
-				"hp_pos",
-				"nbo_id",
-				"so_count",
-				"hp_term",
-				"so_id",
-				"rgd_obj_pos",
-				"xco_pos",
-				"rs_pos",
-				"hp_id",
-				"rdo_pos",
-				"rs_count",
-				"rgd_obj_term",
-				"abstract",
-				"pmid",
-				"bp_count",
-				"mp_pos",
-				"hp_count",
-				"xdb_id",
-				"rgd_obj_id",
-				"bp_pos",
-				"gene_pos",
-				"so_pos",
-				"rdo_term",
-				"chebi_id"
-		);
-		String sql = "insert all ";
-		StringBuilder columns=new StringBuilder();
-		for(String col:fields){
-			columns.append(col).append(",");
-		}
-
-		StringBuilder builder=new StringBuilder();
-		ObjectMapper mapper=new ObjectMapper();
-		Gson gson=new Gson();
-		//for(SolrDoc doc:solrDocs){
-			Map<String, String> docMap=mapper.readValue(gson.toJson(solrDocs.get(0)), Map.class);
-
-			builder.append(" into solr_docs (");
-			builder.append(docMap.keySet().stream().collect(Collectors.joining(",")));
-			builder.append(")");
-			builder.append(" values (");
-			builder.append(docMap.values());
-			builder.append(")");
-
-
-	//	}
-		builder.append(" select * from dual ");
-		sql+=builder.toString();
-		System.out.println(sql+"\n*********************");
-
-	}
 }
