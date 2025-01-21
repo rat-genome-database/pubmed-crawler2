@@ -58,6 +58,8 @@ public class PubMedLibrary {
 	protected static String DATE_FILE_DIR = "/date_id_maps/";
 	protected static DateFormat FILE_NAME_DF = new SimpleDateFormat("yyyy_MM_dd");
 	protected static String OUT_DIR;
+
+
 	public static void main(String[] args) throws Exception {
 	/*	args=new String[4];
 	args[0]="crawlByDate";
@@ -473,7 +475,7 @@ public class PubMedLibrary {
 					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
 
 					ExecutorService executor= new MyThreadPoolExecutor(10,10,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-
+					List<Integer> chunkDataCounts=new ArrayList<>();
 					while ((strCurrentLine = objReader.readLine()) != null) {
 						json = strCurrentLine;
 						SolrDoc doc=mapper.readValue(json, SolrDoc.class);
@@ -481,7 +483,7 @@ public class PubMedLibrary {
 						solrDocs.add(doc);
 						if(solrDocs.size()>1000){
 							//batchUpdateSolrDocs(solrDocs);
-							Runnable workerThread=new SolrDBProcessingThread(solrDocs);
+							Runnable workerThread=new SolrDBProcessingThread(solrDocs, chunkDataCounts);
 							executor.execute(workerThread);
 							//batchUpdate(solrDocs);
 							solrDocs=new ArrayList<>();
@@ -490,13 +492,13 @@ public class PubMedLibrary {
 					if(solrDocs.size()>0){
 					//batchUpdateSolrDocs(solrDocs);
 						//batchUpdate(solrDocs);
-						Runnable workerThread=new SolrDBProcessingThread(solrDocs);
+						Runnable workerThread=new SolrDBProcessingThread(solrDocs,chunkDataCounts);
 						executor.execute(workerThread);
 					}
 					executor.shutdown();
 					while(!executor.isTerminated()){}
 					objReader.close();
-
+					System.out.println("RECORDS WITH DATA CHUNKED:"+ chunkDataCounts.size());
 
 				} catch (FileNotFoundException e) {
 					System.out.println("An error occurred.");

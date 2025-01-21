@@ -7,14 +7,17 @@ import java.util.List;
 
 public class SolrDBProcessingThread implements Runnable{
     private List<SolrDoc> solrDocs;
-    public SolrDBProcessingThread(List<SolrDoc> solrDocs){
+    private List<Integer> chunkDataCounts;
+    public SolrDBProcessingThread(List<SolrDoc> solrDocs, List<Integer> chunkDataCounts){
         this.solrDocs=solrDocs;
+        this.chunkDataCounts=chunkDataCounts;
     }
     @Override
     public void run() {
         SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
         try {
-            solrDocsDAO.addBatch(solrDocs);
+           int chunkedDataCount= solrDocsDAO.addBatch(solrDocs);
+           chunkDataCounts.add(chunkedDataCount);
         }catch (Exception e){
             e.printStackTrace();
         }
