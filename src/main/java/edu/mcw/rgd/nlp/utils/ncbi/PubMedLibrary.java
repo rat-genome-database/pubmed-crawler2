@@ -498,7 +498,12 @@ public class PubMedLibrary {
 					executor.shutdown();
 					while(!executor.isTerminated()){}
 					objReader.close();
-					System.out.println("RECORDS WITH DATA CHUNKED:"+ chunkDataCounts.size());
+
+					int totalChunckDataCount=0;
+					for(int count:chunkDataCounts){
+						totalChunckDataCount+=count;
+					}
+					System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
 
 				} catch (FileNotFoundException e) {
 					System.out.println("An error occurred.");
