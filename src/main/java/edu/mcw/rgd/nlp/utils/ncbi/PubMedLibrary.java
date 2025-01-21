@@ -515,7 +515,7 @@ public class PubMedLibrary {
 			}
 			System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
 			System.out.println("PMIDS SIZE with data chunked:"+ pmidsChunked.size());
-			System.out.println("PMIDS LIST with data chunked:"+ pmidsChunked.stream().collect(Collectors.joining(", ")));
+//			System.out.println("PMIDS LIST with data chunked:"+ pmidsChunked.stream().collect(Collectors.joining(", ")));
 		}catch(Exception e){
 			e.printStackTrace();
 		}
