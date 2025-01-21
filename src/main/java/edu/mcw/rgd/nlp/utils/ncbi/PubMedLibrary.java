@@ -469,6 +469,7 @@ public class PubMedLibrary {
 			mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
 			List<SolrDoc> solrDocs=new ArrayList<>();
 			List<Integer> chunkDataCounts=new ArrayList<>();
+			Set<String> pmidsChunked=new HashSet<>();
 
 			for (final File fileEntry : folder.listFiles()) {
 				try {
@@ -484,7 +485,7 @@ public class PubMedLibrary {
 						solrDocs.add(doc);
 						if(solrDocs.size()>1000){
 							//batchUpdateSolrDocs(solrDocs);
-							Runnable workerThread=new SolrDBProcessingThread(solrDocs, chunkDataCounts);
+							Runnable workerThread=new SolrDBProcessingThread(solrDocs, chunkDataCounts, pmidsChunked);
 							executor.execute(workerThread);
 							//batchUpdate(solrDocs);
 							solrDocs=new ArrayList<>();
@@ -493,7 +494,7 @@ public class PubMedLibrary {
 					if(solrDocs.size()>0){
 					//batchUpdateSolrDocs(solrDocs);
 						//batchUpdate(solrDocs);
-						Runnable workerThread=new SolrDBProcessingThread(solrDocs,chunkDataCounts);
+						Runnable workerThread=new SolrDBProcessingThread(solrDocs,chunkDataCounts, pmidsChunked);
 						executor.execute(workerThread);
 					}
 					executor.shutdown();
@@ -513,6 +514,7 @@ public class PubMedLibrary {
 				totalChunckDataCount+=count;
 			}
 			System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
+			System.out.println("PMIDS with data chunked:"+ pmidsChunked.stream().collect(Collectors.joining(", ")));
 		}catch(Exception e){
 			e.printStackTrace();
 		}
