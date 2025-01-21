@@ -468,6 +468,8 @@ public class PubMedLibrary {
 			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 			mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
 			List<SolrDoc> solrDocs=new ArrayList<>();
+			List<Integer> chunkDataCounts=new ArrayList<>();
+
 			for (final File fileEntry : folder.listFiles()) {
 				try {
 					System.out.println(fileEntry.getAbsolutePath());
@@ -475,7 +477,6 @@ public class PubMedLibrary {
 					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
 
 					ExecutorService executor= new MyThreadPoolExecutor(10,10,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-					List<Integer> chunkDataCounts=new ArrayList<>();
 					while ((strCurrentLine = objReader.readLine()) != null) {
 						json = strCurrentLine;
 						SolrDoc doc=mapper.readValue(json, SolrDoc.class);
@@ -499,18 +500,19 @@ public class PubMedLibrary {
 					while(!executor.isTerminated()){}
 					objReader.close();
 
-					int totalChunckDataCount=0;
-					for(int count:chunkDataCounts){
-						totalChunckDataCount+=count;
-					}
-					System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
+
+
 
 				} catch (FileNotFoundException e) {
 					System.out.println("An error occurred.");
 					e.printStackTrace();
 				}
 			}
-
+			int totalChunckDataCount=0;
+			for(int count:chunkDataCounts){
+				totalChunckDataCount+=count;
+			}
+			System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
