@@ -12,7 +12,7 @@ apply plugin: 'application'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-String myAppName = 'PubmedCrawlerPipeline'
+String myAppName = 'SolrDocsToPostgressPipeline'
 mainClassName = 'edu.mcw.rgd.nlp.utils.ncbi.PubMedLibrary'
 
 
