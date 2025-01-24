@@ -530,14 +530,14 @@ public class PubMedLibrary {
 		}
 
 	}
-	public static void batchUpdateSolrDocs(List<SolrDoc> solrDocs) throws Exception {
-		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
-		try {
-			solrDocsDAO.batchSqlUpdate(solrDocs);
-		}catch (Exception e){
-			e.printStackTrace();
-		}
-
-	}
+//	public static void batchUpdateSolrDocs(List<SolrDoc> solrDocs) throws Exception {
+//		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
+//		try {
+//			solrDocsDAO.batchSqlUpdate(solrDocs);
+//		}catch (Exception e){
+//			e.printStackTrace();
+//		}
+//
+//	}
 
 }
