@@ -10,6 +10,7 @@ import edu.mcw.rgd.common.utils.FileList;
 import edu.mcw.rgd.common.utils.ReadWrite;
 import edu.mcw.rgd.dao.impl.solr.SolrDocsDAO;
 import edu.mcw.rgd.datamodel.solr.SolrDoc;
+import edu.mcw.rgd.datamodel.solr.SolrDocDB;
 import edu.mcw.rgd.process.MyThreadPoolExecutor;
 import edu.mcw.rgd.process.NcbiEutils;
 
@@ -93,6 +94,7 @@ public class PubMedLibrary {
 			indexer(preprint);
 		if(uploadDB)
 			uploadToDB(preprint);
+			//generateSolrJson();
 
 	}
 
@@ -509,12 +511,12 @@ public class PubMedLibrary {
 					e.printStackTrace();
 				}
 			}
-			int totalChunckDataCount=0;
-			for(int count:chunkDataCounts){
-				totalChunckDataCount+=count;
-			}
-			System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
-			System.out.println("PMIDS SIZE with data chunked:"+ pmidsChunked.size());
+//			int totalChunckDataCount=0;
+//			for(int count:chunkDataCounts){
+//				totalChunckDataCount+=count;
+//			}
+//			System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
+//			System.out.println("PMIDS SIZE with data chunked:"+ pmidsChunked.size());
 //			System.out.println("PMIDS LIST with data chunked:"+ pmidsChunked.stream().collect(Collectors.joining(", ")));
 		}catch(Exception e){
 			e.printStackTrace();
@@ -530,14 +532,15 @@ public class PubMedLibrary {
 		}
 
 	}
-//	public static void batchUpdateSolrDocs(List<SolrDoc> solrDocs) throws Exception {
-//		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
-//		try {
-//			solrDocsDAO.batchSqlUpdate(solrDocs);
-//		}catch (Exception e){
-//			e.printStackTrace();
-//		}
-//
-//	}
+	public static void generateSolrJson() throws Exception {
+		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
+		List<SolrDocDB> docs=solrDocsDAO.getSolrDocs();
+		for(SolrDocDB doc:docs){
+			try {
+				solrDocsDAO.getJson(doc);
+			}catch (Exception e){}
+		}
+
+	}
 
 }
