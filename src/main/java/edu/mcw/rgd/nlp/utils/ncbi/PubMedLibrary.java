@@ -9,6 +9,7 @@ import edu.mcw.rgd.common.utils.FileEntry;
 import edu.mcw.rgd.common.utils.FileList;
 import edu.mcw.rgd.common.utils.ReadWrite;
 import edu.mcw.rgd.dao.impl.solr.SolrDocsDAO;
+import edu.mcw.rgd.datamodel.solr.PubmedSolrDoc;
 import edu.mcw.rgd.datamodel.solr.SolrDoc;
 import edu.mcw.rgd.datamodel.solr.SolrDocDB;
 import edu.mcw.rgd.process.MyThreadPoolExecutor;
@@ -17,6 +18,10 @@ import edu.mcw.rgd.process.NcbiEutils;
 // newly added ---
 
 import edu.mcw.rgd.process.SolrDBProcessingThread;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.net.ntp.TimeStamp;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.solr.client.solrj.SolrServer;
@@ -25,6 +30,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -60,6 +66,7 @@ public class PubMedLibrary {
 	protected static DateFormat FILE_NAME_DF = new SimpleDateFormat("yyyy_MM_dd");
 	protected static String OUT_DIR;
 
+	public static List<JSONObject> jsonObjects = new ArrayList<>();
 
 	public static void main(String[] args) throws Exception {
 	/*	args=new String[4];
@@ -94,7 +101,7 @@ public class PubMedLibrary {
 			indexer(preprint);
 		if(uploadDB)
 			uploadToDB(preprint);
-			//generateSolrJson();
+//			generateSolrJson();
 
 	}
 
@@ -534,13 +541,51 @@ public class PubMedLibrary {
 	}
 	public static void generateSolrJson() throws Exception {
 		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
-		List<SolrDocDB> docs=solrDocsDAO.getSolrDocs();
-		for(SolrDocDB doc:docs){
+		List<PubmedSolrDoc> docs=solrDocsDAO.getLimitedSolrDocs(10);
+		String pathString="C:\\Git\\rgd_pipelines\\pubmed-crawler2\\data\\";
+		File folder=new File(pathString);
+
+		for(PubmedSolrDoc doc:docs) {
 			try {
-				solrDocsDAO.getJson(doc);
-			}catch (Exception e){}
+				JSONObject obj = new JSONObject(); // new JSONObject(doc);
+				// we have to take apart the document
+				Iterator<SolrInputField> itr = doc.iterator();
+				String key;
+				SolrInputField field;
+				while (itr.hasNext()) {
+					field = itr.next();
+					key = field.getName();
+					obj.put(key, doc.getFieldValues(key));
+				}
+				jsonObjects.add(obj);
+
+
+			} catch (Exception e) {
+
+//				System.err.println("Error when indexing:" + pmidStr);
+				e.printStackTrace();
+
+			}
+		}
+		Path path = new Path(pathString+new TimeStamp(new Date())+".json");
+		if(PubMedLibrary.jsonObjects.size() != 0) {
+			//output = fs.create(path);
+//			BufferedWriter output = new BufferedWriter
+//					(new OutputStreamWriter(new FileOutputStream(String.valueOf(path)));
+			for (JSONObject j : PubMedLibrary.jsonObjects) {
+				//ClientUtils.writeXML(j,output);
+//				output.write(j.toString());
+//				output.write("\n");
+				System.out.println(j.toString());
+			}
+			//out.writeBytes(solr_doc.getFieldValue("pmid")+","+solr_doc.getFieldValue("title") + "\n");
+//			output.close();
+//			;
+			PubMedLibrary.jsonObjects.clear();
 		}
 
 	}
+
+
 
 }
