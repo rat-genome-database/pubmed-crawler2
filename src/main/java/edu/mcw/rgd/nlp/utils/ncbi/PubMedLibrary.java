@@ -11,7 +11,6 @@ import edu.mcw.rgd.common.utils.ReadWrite;
 import edu.mcw.rgd.dao.impl.solr.SolrDocsDAO;
 import edu.mcw.rgd.datamodel.solr.PubmedSolrDoc;
 import edu.mcw.rgd.datamodel.solr.SolrDoc;
-import edu.mcw.rgd.datamodel.solr.SolrDocDB;
 import edu.mcw.rgd.process.MyThreadPoolExecutor;
 import edu.mcw.rgd.process.NcbiEutils;
 
