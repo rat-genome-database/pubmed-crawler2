@@ -23,9 +23,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
@@ -99,8 +97,8 @@ public class PubMedLibrary {
 		if(index)
 			indexer(preprint);
 		if(uploadDB)
-			uploadToDB(preprint);
-//			generateSolrJson();
+//			uploadToDB(preprint);
+		generateSolrJson();
 
 	}
 
@@ -394,77 +392,77 @@ public class PubMedLibrary {
 	public static void indexer(boolean preprint) throws SolrServerException, IOException {
 		//Preparing the Solr client
 
-		String tempSolr="http://localhost:8080/testSolr/collection0";
-		SolrServer Solr;
-		if(preprint) {
-			Solr = new HttpSolrServer("http://localhost:8080/preprintSolr/collection0");
-		} else Solr = new HttpSolrServer(tempSolr);
-		Solr.deleteByQuery("*");
-
-		//Saving the document
-		Solr.commit();
-		try {
-//            SolrPingResponse pingResponse = Solr.ping();
-//			System.out.println("Response "+ pingResponse.getResponse() + "," + pingResponse.getStatus());
-			File folder = new File(OUT_DIR);
-			String json = "";
-
-			for (final File fileEntry : folder.listFiles()) {
-				try {
-					System.out.println(fileEntry.getAbsolutePath());
-
-
-					String strCurrentLine;
-
-					//BufferedReader objReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileEntry))));
-					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
-					int counter = 0;
-					List<SolrInputDocument> solr_docs = new ArrayList<>();
-					while ((strCurrentLine = objReader.readLine()) != null) {
-						json = strCurrentLine;
-
-						JSONObject data = new JSONObject(json);
-						SolrInputDocument solr_doc = new SolrInputDocument();
-						Iterator<String> keys = data.keys();
-
-						while (keys.hasNext()) {
-							String key = keys.next();
-							if(key.equalsIgnoreCase("p_date"))
-								solr_doc.addField(key,((JSONArray)data.get(key)).get(0)+"T06:00:00Z");
-							else {
-								if(data.get(key) instanceof JSONArray)
-								 	solr_doc.addField(key, ((JSONArray) data.get(key)).toList());
-								else solr_doc.addField(key,data.get(key));
-							}
-							// System.out.println(key + "," + data.get(key).toString());
-						}
-						solr_docs.add(solr_doc);
-
-						if(solr_docs.size() == 100000){
-							System.out.println("Documents Updated "+ counter);
-							UpdateRequest updateRequest = new UpdateRequest();
-							updateRequest.setAction( UpdateRequest.ACTION.COMMIT, false, false);
-							updateRequest.add( solr_docs);
-							UpdateResponse rsp = updateRequest.process(Solr);
-							solr_docs.clear();
-						}
-						counter ++;
-					}
-					System.out.println("Documents Updated "+ counter);
-					UpdateRequest updateRequest = new UpdateRequest();
-					updateRequest.setAction( UpdateRequest.ACTION.COMMIT, false, false);
-					updateRequest.add( solr_docs);
-					UpdateResponse rsp = updateRequest.process(Solr);
-					objReader.close();
-				} catch (FileNotFoundException e) {
-					System.out.println("An error occurred.");
-					e.printStackTrace();
-				}
-			}
-
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+//		String tempSolr="http://localhost:8080/testSolr/collection0";
+//		SolrServer Solr;
+//		if(preprint) {
+//			Solr = new HttpSolrServer("http://localhost:8080/preprintSolr/collection0");
+//		} else Solr = new HttpSolrServer(tempSolr);
+//		Solr.deleteByQuery("*");
+//
+//		//Saving the document
+//		Solr.commit();
+//		try {
+////            SolrPingResponse pingResponse = Solr.ping();
+////			System.out.println("Response "+ pingResponse.getResponse() + "," + pingResponse.getStatus());
+//			File folder = new File(OUT_DIR);
+//			String json = "";
+//
+//			for (final File fileEntry : folder.listFiles()) {
+//				try {
+//					System.out.println(fileEntry.getAbsolutePath());
+//
+//
+//					String strCurrentLine;
+//
+//					//BufferedReader objReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileEntry))));
+//					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
+//					int counter = 0;
+//					List<SolrInputDocument> solr_docs = new ArrayList<>();
+//					while ((strCurrentLine = objReader.readLine()) != null) {
+//						json = strCurrentLine;
+//
+//						JSONObject data = new JSONObject(json);
+//						SolrInputDocument solr_doc = new SolrInputDocument();
+//						Iterator<String> keys = data.keys();
+//
+//						while (keys.hasNext()) {
+//							String key = keys.next();
+//							if(key.equalsIgnoreCase("p_date"))
+//								solr_doc.addField(key,((JSONArray)data.get(key)).get(0)+"T06:00:00Z");
+//							else {
+//								if(data.get(key) instanceof JSONArray)
+//								 	solr_doc.addField(key, ((JSONArray) data.get(key)).toList());
+//								else solr_doc.addField(key,data.get(key));
+//							}
+//							// System.out.println(key + "," + data.get(key).toString());
+//						}
+//						solr_docs.add(solr_doc);
+//
+//						if(solr_docs.size() == 100000){
+//							System.out.println("Documents Updated "+ counter);
+//							UpdateRequest updateRequest = new UpdateRequest();
+//							updateRequest.setAction( UpdateRequest.ACTION.COMMIT, false, false);
+//							updateRequest.add( solr_docs);
+//							UpdateResponse rsp = updateRequest.process(Solr);
+//							solr_docs.clear();
+//						}
+//						counter ++;
+//					}
+//					System.out.println("Documents Updated "+ counter);
+//					UpdateRequest updateRequest = new UpdateRequest();
+//					updateRequest.setAction( UpdateRequest.ACTION.COMMIT, false, false);
+//					updateRequest.add( solr_docs);
+//					UpdateResponse rsp = updateRequest.process(Solr);
+//					objReader.close();
+//				} catch (FileNotFoundException e) {
+//					System.out.println("An error occurred.");
+//					e.printStackTrace();
+//				}
+//			}
+//
+//		}catch(Exception e){
+//			e.printStackTrace();
+//		}
 
 	}
 	public static void uploadToDB(boolean preprint) {
@@ -477,7 +475,6 @@ public class PubMedLibrary {
 			mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
 			List<SolrDoc> solrDocs=new ArrayList<>();
 			List<Integer> chunkDataCounts=new ArrayList<>();
-			Set<String> pmidsChunked=new HashSet<>();
 
 			for (final File fileEntry : folder.listFiles()) {
 				try {
@@ -493,7 +490,7 @@ public class PubMedLibrary {
 						solrDocs.add(doc);
 						if(solrDocs.size()>1000){
 							//batchUpdateSolrDocs(solrDocs);
-							Runnable workerThread=new SolrDBProcessingThread(solrDocs, chunkDataCounts, pmidsChunked);
+							Runnable workerThread=new SolrDBProcessingThread(solrDocs, chunkDataCounts);
 							executor.execute(workerThread);
 							//batchUpdate(solrDocs);
 							solrDocs=new ArrayList<>();
@@ -502,7 +499,7 @@ public class PubMedLibrary {
 					if(solrDocs.size()>0){
 					//batchUpdateSolrDocs(solrDocs);
 						//batchUpdate(solrDocs);
-						Runnable workerThread=new SolrDBProcessingThread(solrDocs,chunkDataCounts, pmidsChunked);
+						Runnable workerThread=new SolrDBProcessingThread(solrDocs,chunkDataCounts);
 						executor.execute(workerThread);
 					}
 					executor.shutdown();
@@ -538,13 +535,16 @@ public class PubMedLibrary {
 		}
 
 	}
+	public void batchSolrIndexer(){
+
+	}
 	public static void generateSolrJson() throws Exception {
 		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
-		List<PubmedSolrDoc> docs=solrDocsDAO.getLimitedSolrDocs(10);
+		List<SolrInputDocument> docs=solrDocsDAO.getLimitedSolrDocs(10);
 		String pathString="C:\\Git\\rgd_pipelines\\pubmed-crawler2\\data\\";
 		File folder=new File(pathString);
 
-		for(PubmedSolrDoc doc:docs) {
+		for(SolrInputDocument doc:docs) {
 			try {
 				JSONObject obj = new JSONObject(); // new JSONObject(doc);
 				// we have to take apart the document

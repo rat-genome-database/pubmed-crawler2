@@ -36,6 +36,33 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework/spring-jdbc
     implementation group: 'org.springframework', name: 'spring-jdbc', version: '5.3.39'
 // https://mvnrepository.com/artifact/org.apache.commons/commons-dbcp2
+    // https://mvnrepository.com/artifact/org.apache.solr/solr-core
+    implementation group: 'org.apache.solr', name: 'solr-core', version: '8.11.4'
+
+    // https://mvnrepository.com/artifact/org.apache.solr/solr-solrj
+    implementation group: 'org.apache.solr', name: 'solr-solrj', version: '8.11.4'
+// https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+
+// https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore
+    implementation group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.16'
+// https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime
+    implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.14'
+
+// https://mvnrepository.com/artifact/org.apache.solr/solr-cell
+    implementation group: 'org.apache.solr', name: 'solr-cell', version: '8.11.4'
+// https://mvnrepository.com/artifact/org.apache.solr/solr-analysis-extras
+    implementation group: 'org.apache.solr', name: 'solr-analysis-extras', version: '8.11.4'
+
+// https://mvnrepository.com/artifact/org.apache.solr/solr-dataimporthandler
+    testImplementation group: 'org.apache.solr', name: 'solr-dataimporthandler', version: '8.11.4'
+// https://mvnrepository.com/artifact/org.apache.solr/solr-test-framework
+    testImplementation group: 'org.apache.solr', name: 'solr-test-framework', version: '8.11.4'
+    // https://mvnrepository.com/artifact/org.apache.solr/solr-velocity
+    implementation group: 'org.apache.solr', name: 'solr-velocity', version: '8.11.4'
+    // https://mvnrepository.com/artifact/org.apache.solr/solr-langid
+    implementation group: 'org.apache.solr', name: 'solr-langid', version: '8.11.4'
+
 
 
 }
