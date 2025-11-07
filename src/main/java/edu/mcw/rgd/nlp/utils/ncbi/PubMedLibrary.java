@@ -97,8 +97,8 @@ public class PubMedLibrary {
 		if(index)
 			indexer(preprint);
 		if(uploadDB)
-//			uploadToDB(preprint);
-		generateSolrJson();
+		uploadToDB(preprint);
+		//generateSolrJson();
 
 	}
 
@@ -466,65 +466,122 @@ public class PubMedLibrary {
 
 	}
 	public static void uploadToDB(boolean preprint) {
-		try {
+		ExecutorService executor = null;
+		SolrDocsDAO solrDocsDAO = null;
 
+		try {
 			File folder = new File(OUT_DIR);
-			String json = "";
-			ObjectMapper mapper=new ObjectMapper();
+			ObjectMapper mapper = new ObjectMapper();
 			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 			mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
-			List<SolrDoc> solrDocs=new ArrayList<>();
-			List<Integer> chunkDataCounts=new ArrayList<>();
+
+			List<SolrDoc> solrDocs = new ArrayList<>();
+			List<Integer> chunkDataCounts = new ArrayList<>();
+
+			// Reuse single executor and DAO across all files
+			executor = new MyThreadPoolExecutor(10, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+			solrDocsDAO = new SolrDocsDAO();
+
+			int totalDocsProcessed = 0;
+			int totalDocsSkipped = 0;
 
 			for (final File fileEntry : folder.listFiles()) {
-				try {
-					System.out.println(fileEntry.getAbsolutePath());
-					String strCurrentLine;
-					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
-
-					ExecutorService executor= new MyThreadPoolExecutor(10,10,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-					while ((strCurrentLine = objReader.readLine()) != null) {
-						json = strCurrentLine;
-						SolrDoc doc=mapper.readValue(json, SolrDoc.class);
-						//insertSolrDoc(doc);
-						solrDocs.add(doc);
-						if(solrDocs.size()>1000){
-							//batchUpdateSolrDocs(solrDocs);
-							Runnable workerThread=new SolrDBProcessingThread(solrDocs, chunkDataCounts);
-							executor.execute(workerThread);
-							//batchUpdate(solrDocs);
-							solrDocs=new ArrayList<>();
+				if (fileEntry == null || !fileEntry.isFile()) {
+					continue;
 				}
+
+				try {
+					System.out.println("Processing: " + fileEntry.getAbsolutePath());
+
+					try (BufferedReader objReader = new BufferedReader(new FileReader(fileEntry))) {
+						String strCurrentLine;
+
+						while ((strCurrentLine = objReader.readLine()) != null) {
+							SolrDoc doc = mapper.readValue(strCurrentLine, SolrDoc.class);
+							solrDocs.add(doc);
+
+							// Process in batches of 1000
+							if (solrDocs.size() >= 1000) {
+								List<SolrDoc> batch = new ArrayList<>(solrDocs);
+								int[] stats = processBatch(batch, executor, chunkDataCounts, solrDocsDAO);
+								totalDocsProcessed += stats[0];
+								totalDocsSkipped += stats[1];
+								solrDocs.clear();
+							}
+						}
+
+						// Process remaining documents
+						if (!solrDocs.isEmpty()) {
+							List<SolrDoc> batch = new ArrayList<>(solrDocs);
+							int[] stats = processBatch(batch, executor, chunkDataCounts, solrDocsDAO);
+							totalDocsProcessed += stats[0];
+							totalDocsSkipped += stats[1];
+							solrDocs.clear();
+						}
 					}
-					if(solrDocs.size()>0){
-					//batchUpdateSolrDocs(solrDocs);
-						//batchUpdate(solrDocs);
-						Runnable workerThread=new SolrDBProcessingThread(solrDocs,chunkDataCounts);
-						executor.execute(workerThread);
-					}
-					executor.shutdown();
-					while(!executor.isTerminated()){}
-					objReader.close();
 
+					System.out.println("Completed: " + fileEntry.getName());
 
-
-
-				} catch (FileNotFoundException e) {
-					System.out.println("An error occurred.");
+				} catch (Exception e) {
+					System.err.println("Error processing file: " + fileEntry.getName());
 					e.printStackTrace();
 				}
 			}
-//			int totalChunckDataCount=0;
-//			for(int count:chunkDataCounts){
-//				totalChunckDataCount+=count;
-//			}
-//			System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
-//			System.out.println("PMIDS SIZE with data chunked:"+ pmidsChunked.size());
-//			System.out.println("PMIDS LIST with data chunked:"+ pmidsChunked.stream().collect(Collectors.joining(", ")));
-		}catch(Exception e){
+
+			// Shutdown executor once at the end
+			if (executor != null) {
+				executor.shutdown();
+				executor.awaitTermination(30, TimeUnit.MINUTES);
+			}
+
+			System.out.println("=== Upload Statistics ===");
+			System.out.println("Total documents processed: " + totalDocsProcessed);
+			System.out.println("Total documents skipped (already exist): " + totalDocsSkipped);
+
+		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			// Ensure executor is shutdown
+			if (executor != null && !executor.isShutdown()) {
+				executor.shutdownNow();
+			}
+		}
+	}
+
+	/**
+	 * Process a batch of documents - check existence in batch and submit non-existing ones
+	 * @return array [processedCount, skippedCount]
+	 */
+	private static int[] processBatch(List<SolrDoc> batch, ExecutorService executor,
+	                                   List<Integer> chunkDataCounts, SolrDocsDAO solrDocsDAO) throws Exception {
+		// Extract PMIDs for batch existence check
+		List<String> pmids = batch.stream()
+				.filter(doc -> doc.getPmid() != null && !doc.getPmid().isEmpty())
+				.map(doc -> doc.getPmid().get(0))
+				.collect(Collectors.toList());
+
+		// Batch check for existing documents
+		Set<String> existingPmids = solrDocsDAO.getExistingPmids(pmids);
+
+		// Filter out existing documents
+		List<SolrDoc> newDocs = batch.stream()
+				.filter(doc -> doc.getPmid() != null && !doc.getPmid().isEmpty()
+						&& !existingPmids.contains(doc.getPmid().get(0)))
+				.collect(Collectors.toList());
+
+		int skippedCount = batch.size() - newDocs.size();
+
+		// Submit non-existing documents for processing
+		if (!newDocs.isEmpty()) {
+			Runnable workerThread = new SolrDBProcessingThread(newDocs, chunkDataCounts);
+			executor.execute(workerThread);
 		}
 
+		return new int[]{newDocs.size(), skippedCount};
+	}
+	public static boolean existingDoc(SolrDoc solrDoc) throws Exception {
+		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
+		return solrDocsDAO.exists(solrDoc.getPmid().get(0));
 	}
 	public static void insertSolrDoc(SolrDoc solrDoc) throws Exception {
 		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
