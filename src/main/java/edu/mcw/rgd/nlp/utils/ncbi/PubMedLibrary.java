@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
-import com.google.gson.Gson;
 import edu.mcw.rgd.common.utils.FileEntry;
 import edu.mcw.rgd.common.utils.FileList;
 import edu.mcw.rgd.common.utils.ReadWrite;
@@ -15,7 +14,6 @@ import edu.mcw.rgd.process.NcbiEutils;
 
 // newly added ---
 
-import edu.mcw.rgd.process.SolrDBProcessingThread;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.solr.client.solrj.SolrServer;
@@ -74,9 +72,6 @@ public class PubMedLibrary {
 				case "--indexer":
 					index=true;
 					break;
-				case "--uploadToDB":
-					uploadDB=true;
-					break;
 				case "--preprint":
 					preprint = true;
 					break;
@@ -91,8 +86,7 @@ public class PubMedLibrary {
 		
 		if(index)
 			indexer(preprint);
-		if(uploadDB)
-			uploadToDB(preprint);
+
 
 	}
 
@@ -459,85 +453,6 @@ public class PubMedLibrary {
 		}
 
 	}
-	public static void uploadToDB(boolean preprint) {
-		try {
 
-			File folder = new File(OUT_DIR);
-			String json = "";
-			ObjectMapper mapper=new ObjectMapper();
-			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-			mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
-			List<SolrDoc> solrDocs=new ArrayList<>();
-			List<Integer> chunkDataCounts=new ArrayList<>();
-			Set<String> pmidsChunked=new HashSet<>();
-
-			for (final File fileEntry : folder.listFiles()) {
-				try {
-					System.out.println(fileEntry.getAbsolutePath());
-					String strCurrentLine;
-					BufferedReader objReader = new BufferedReader(new FileReader(fileEntry));
-
-					ExecutorService executor= new MyThreadPoolExecutor(10,10,0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-					while ((strCurrentLine = objReader.readLine()) != null) {
-						json = strCurrentLine;
-						SolrDoc doc=mapper.readValue(json, SolrDoc.class);
-						//insertSolrDoc(doc);
-						solrDocs.add(doc);
-						if(solrDocs.size()>1000){
-							//batchUpdateSolrDocs(solrDocs);
-							Runnable workerThread=new SolrDBProcessingThread(solrDocs, chunkDataCounts, pmidsChunked);
-							executor.execute(workerThread);
-							//batchUpdate(solrDocs);
-							solrDocs=new ArrayList<>();
-				}
-					}
-					if(solrDocs.size()>0){
-					//batchUpdateSolrDocs(solrDocs);
-						//batchUpdate(solrDocs);
-						Runnable workerThread=new SolrDBProcessingThread(solrDocs,chunkDataCounts, pmidsChunked);
-						executor.execute(workerThread);
-					}
-					executor.shutdown();
-					while(!executor.isTerminated()){}
-					objReader.close();
-
-
-
-
-				} catch (FileNotFoundException e) {
-					System.out.println("An error occurred.");
-					e.printStackTrace();
-				}
-			}
-			int totalChunckDataCount=0;
-			for(int count:chunkDataCounts){
-				totalChunckDataCount+=count;
-			}
-			System.out.println("RECORDS WITH DATA CHUNKED:"+ totalChunckDataCount);
-			System.out.println("PMIDS SIZE with data chunked:"+ pmidsChunked.size());
-//			System.out.println("PMIDS LIST with data chunked:"+ pmidsChunked.stream().collect(Collectors.joining(", ")));
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-
-	}
-	public static void insertSolrDoc(SolrDoc solrDoc) throws Exception {
-		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
-		try {
-			solrDocsDAO.insert(solrDoc);
-		}catch (Exception e){
-			e.printStackTrace();
-		}
-
-	}
-	public static void batchUpdateSolrDocs(List<SolrDoc> solrDocs) throws Exception {
-		SolrDocsDAO solrDocsDAO=new SolrDocsDAO();
-		try {
-			solrDocsDAO.batchSqlUpdate(solrDocs);
-		}catch (Exception e){
-			e.printStackTrace();
-		}
-
-	}
 
 }
