@@ -3,6 +3,7 @@
 # ./run.sh 2015/01/01 2015/01/30
 #
 . /etc/profile
+source ~/.bashrc
 MYJAVA="java -Xms512m -Xmx20480m"
 APP_DIR=/rgd/pubmed/PubMedCrawler2
 DATA_DIR=/rgd/pubmed/
