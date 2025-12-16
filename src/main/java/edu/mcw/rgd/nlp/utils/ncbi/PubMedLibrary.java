@@ -43,8 +43,7 @@ public class PubMedLibrary {
             return;
         }
         crawlByDate(args);
-
-        printUsage();
+        
     }
 
     private static void printUsage() {
