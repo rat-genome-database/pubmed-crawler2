@@ -12,7 +12,7 @@ apply plugin: 'application'
 sourceCompatibility = 17
 targetCompatibility = 17
 
-String myAppName = 'PubmedCrawlerPipeline'
+String myAppName = 'PubMedCrawler2'
 mainClassName = 'edu.mcw.rgd.nlp.utils.ncbi.PubMedLibrary'
 
 
