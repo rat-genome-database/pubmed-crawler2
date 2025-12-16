@@ -3,318 +3,215 @@ package edu.mcw.rgd.process;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jaxen.XPath;
 import org.jaxen.xom.XOMXPath;
 
 import java.io.*;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
- * Created by IntelliJ IDEA. <br>
- * User: mtutaj <br>
- * Date: 10/18/11 <br>
- * Time: 1:04 PM <br>
- * <p>
- * A wrapper to automate calls to NCBI eUtils
- * <p>code based on NcbiEutils class from EntrezGene pipeline project
+ * Wrapper for NCBI eUtils API (eSearch and eFetch).
  */
 public class NcbiEutils {
 
-    private String eUtils_db;   // NCBI: database we are connecting to, like 'gene'
-    private String eUtils_tool; // name of rgd tool requesting data from NCBI, like 'rgd_eg_pipeline'
-    private String eUtils_email; // email contact used to resolve issue between rgd and eUtils
+    private static final Logger logger = LogManager.getLogger(NcbiEutils.class);
+
+    private String eUtils_db;
+    private String eUtils_tool;
+    private String eUtils_email;
     private String ncbiSearchUrl;
     private String ncbiFetchUrl;
 
-    public ESearchResult createESearchResult() {
-
-        return new ESearchResult();
-    }
-
     /**
-     * run eSearch query
-     * <p>Note: eSearch result is an xml file; as of Feb 21, 2014, dtd file referenced in result file
-     * is no longer available from NCBI eUtils website, therefore to make the parsing work
-     * we remove <!DOCTYPE ...> line from result xml file before proceeding
-     * @param term term for eSearch query
-     * @return ESearchResult object
-     * @throws Exception
+     * Execute eSearch query to find article IDs.
      */
-    public ESearchResult runESearch(String term) throws Exception  {
+    public ESearchResult runESearch(String term) throws Exception {
+        String url = buildSearchUrl(term);
 
-        // construct eSearch query
-        StringBuilder url = new StringBuilder(this.getNcbiSearchUrl());
-        url.append("?db=").append(this.geteUtils_db());
-        url.append("&tool=").append(this.geteUtils_tool());
-        url.append("&email=").append(this.geteUtils_email());
-        url.append("&term=").append(URLEncoder.encode(term,"UTF-8"));
-        url.append("&retmax=100000000&usehistory=y");
+        ESearchResult result = new ESearchResult();
+        result.queryOriginal = url;
 
-        ESearchResult res = createESearchResult();
-        res.queryOriginal = url.toString();
-        
-        
-		
-		System.out.println("finish waiting ");
-        Document doc = downloadXmlFileFromWeb(res.queryOriginal);
-     	res.xml = doc.toXML();
+        Document doc = downloadAndParseXml(url);
+        result.xml = doc.toXML();
 
-        // extract values of elements important to us (parameters to eFetch)
-        XPath xpath = new XOMXPath("/eSearchResult/Count");
-        res.recordCount = xpath.stringValueOf(doc);
-        xpath = new XOMXPath("/eSearchResult/QueryKey");
-        res.queryKey = xpath.stringValueOf(doc);
-        xpath = new XOMXPath("/eSearchResult/WebEnv");
-        res.webEnv = xpath.stringValueOf(doc);
-        xpath = new XOMXPath("/eSearchResult/QueryTranslation");
-        res.queryTranslation = xpath.stringValueOf(doc);
+        // Extract search results
+        result.recordCount = xpathString(doc, "/eSearchResult/Count");
+        result.queryKey = xpathString(doc, "/eSearchResult/QueryKey");
+        result.webEnv = xpathString(doc, "/eSearchResult/WebEnv");
+        result.queryTranslation = xpathString(doc, "/eSearchResult/QueryTranslation");
 
-        // get all entrezgene ids
-        xpath = new XOMXPath("/eSearchResult/IdList/Id");
-        List<Element> idElList = (List<Element>) xpath.selectNodes(doc);
-        res.ids = new ArrayList<String>(idElList.size());
-        for( Element idEl: idElList ) {
-            res.ids.add(idEl.getValue());
+        // Extract IDs
+        XPath xpath = new XOMXPath("/eSearchResult/IdList/Id");
+        List<Element> idElements = (List<Element>) xpath.selectNodes(doc);
+        result.ids = new ArrayList<>(idElements.size());
+        for (Element el : idElements) {
+            result.ids.add(el.getValue());
         }
 
-        return res;
+        return result;
     }
 
     /**
-     * based on results from eSearch, we run eFetch, download the file and return a copy of the file;
-     * <p>
-     * sometimes batch size (value of retMax) is to big for eUtils; if this is the case, we reduce
-     * retMax by factor of 5, and try again; eSearch.fetchedCount shows the actual value of fetched records
-     * </p>
-     * @param eSearch eSearch result
-     * @param retMode return mode; if null 'xml' will be used
-     * @param retMax maximum nr of records to be returned
-     * @param retStart from which record we should fetch the data
-     * @return file with data or exception will be thrown
+     * Execute eFetch to download article records.
      */
-    public File runEFetch(ESearchResult eSearch, String retMode, int retMax, int retStart) throws Exception {
+    public File runEFetch(ESearchResult search, String retMode, int retMax, int retStart) throws Exception {
+        int currentRetMax = retMax;
 
-        while( retMax>0 ) {
-            int maxRetryCount = 13;
-            int retryCount = 0;
+        while (currentRetMax > 0) {
             try {
-                // construct efetch query
-                StringBuilder url = new StringBuilder(this.getNcbiFetchUrl());
-                url.append("?db=").append(this.geteUtils_db());
-                url.append("&tool=").append(this.geteUtils_tool());
-                url.append("&email=").append(this.geteUtils_email());
-                url.append("&WebEnv=").append(eSearch.webEnv);
-                url.append("&query_key=").append(eSearch.queryKey);
-                url.append("&retmode=").append(retMode!=null?retMode:"xml");
-                url.append("&retmax=").append(retMax);
-                url.append("&retstart=").append(retStart);
+                String url = buildFetchUrl(search, retMode, currentRetMax, retStart);
+                search.fetchQuery = url;
 
-                eSearch.fetchQuery = url.toString();
-                File f = downloadFile(maxRetryCount, eSearch);
+                File file = downloadToTempFile(url);
+                search.fetchedCount = getTagCount(file, "<PubmedArticle>");
+                return file;
 
-                // the downloaded file must contain at least one article
-                eSearch.fetchedCount = getTagCount(f, "<PubmedArticle>");
-                return f;
-            }
-            catch(IOException io) {
-                // rethrow IO exceptions
-                throw io;
-            }
-            catch(Exception e) {
-                // catch FileDownloader exceptions to reduce retMax value by a factor of 5
-                if( retMax > 5 ) {
-                    retMax /= 5;
-                } else if( retMax > 1 ) {
-                    retMax = 1;
+            } catch (IOException e) {
+                throw e;  // IO errors should propagate immediately
+            } catch (Exception e) {
+                // Reduce batch size and retry
+                if (currentRetMax > 5) {
+                    currentRetMax /= 5;
+                    logger.warn("Reducing batch size to {} due to error: {}", currentRetMax, e.getMessage());
+                } else if (currentRetMax > 1) {
+                    currentRetMax = 1;
                 } else {
-                    if( retryCount<maxRetryCount ) {
-                        retryCount++;
-                        Thread.sleep(11111*retryCount);
-                    } else
-                        retMax = 0; // will break the loop
+                    throw new Exception("Cannot download data from NCBI after retries", e);
                 }
             }
         }
-        throw new Exception("permanent error: cannot download data from NCBI");
+
+        throw new Exception("Cannot download data from NCBI");
     }
 
-    static public int getTagCount(File f, String tag) throws Exception  {
+    private String buildSearchUrl(String term) throws Exception {
+        return ncbiSearchUrl +
+                "?db=" + eUtils_db +
+                "&tool=" + eUtils_tool +
+                "&email=" + eUtils_email +
+                "&term=" + URLEncoder.encode(term, StandardCharsets.UTF_8) +
+                "&retmax=100000000&usehistory=y";
+    }
 
-        // count nr of occurrences of a specified tag
-        BufferedReader reader = new BufferedReader(new FileReader(f));
-        String line;
-        int tagCount = 0;
-        while( (line=reader.readLine())!=null ) {
-            if( line.contains(tag) ) {
-                tagCount++;
+    private String buildFetchUrl(ESearchResult search, String retMode, int retMax, int retStart) {
+        return ncbiFetchUrl +
+                "?db=" + eUtils_db +
+                "&tool=" + eUtils_tool +
+                "&email=" + eUtils_email +
+                "&WebEnv=" + search.webEnv +
+                "&query_key=" + search.queryKey +
+                "&retmode=" + (retMode != null ? retMode : "xml") +
+                "&retmax=" + retMax +
+                "&retstart=" + retStart;
+    }
+
+    private Document downloadAndParseXml(String url) throws Exception {
+        File tmpFile = downloadToTempFile(url);
+
+        try {
+            removeDocType(tmpFile);
+
+            // Retry parsing with backoff for transient errors
+            for (int retry = 0; retry < 10; retry++) {
+                try {
+                    Document doc = new Builder().build(tmpFile);
+                    Thread.sleep((long) (Math.random() * 1000)); // Rate limiting
+                    return doc;
+                } catch (IOException e) {
+                    logger.warn("Parse attempt {} failed: {}", retry + 1, e.getMessage());
+                    Thread.sleep(5000L * (retry + 1));
+                }
             }
+            throw new Exception("Failed to parse XML after retries");
+        } finally {
+            tmpFile.delete();
         }
-        reader.close();
-        return tagCount;
     }
 
-    private Document downloadXmlFileFromWeb(String url) throws Exception {
-        // download the file to a tmp file
-        File tmpFile = downloadFile(url);
-
-        // remove !DOCTYPE tag
-        removeDocType(tmpFile);
-
-        // build xml doc from that file
-        Builder builder = new Builder();
-        Document doc = null;
-
-        // sometimes we get a 403 response from NCBI server; after a timeout it is usually normal again
-        for( int retries=0; retries<10; retries++) {
-            try {
-                doc = builder.build(tmpFile);
-
-                // sleep up to 1 second after the download so we won't flood NCBI with multiple requests per second
-                // what results in getting 403 HTTP errors
-                Thread.sleep(new Random().nextInt(1000));
-
-                break;
-            }
-            catch(java.io.IOException ioe) {
-                System.out.println(ioe.toString()+", processing will be retried in few seconds...");
-
-                // sleep 5sec before 1st retry, 10sec before next retry, until 10th retry
-                Thread.sleep(5000*(retries+1));
-            }
-        }
-
-        // cleanup
-        tmpFile.delete();
-        return doc;
-    }
-
-    // this is a hack since http://eutils.ncbi.nlm.nih.gov/eutils/dtd/20060628/esearch.dtd file
-    // cannot be download from NCBI
-    private void removeDocType(File f) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(f));
-        File outFile = File.createTempFile("eutils", "tmp");
-        BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));
-        String line;
-        while( (line=reader.readLine())!=null ) {
-            if( !line.startsWith("<!DOCTYPE") ) {
-                writer.write(line);
-                writer.newLine();
-            }
-        }
-        reader.close();
-        writer.close();
-
-        reader = new BufferedReader(new FileReader(outFile));
-        writer = new BufferedWriter(new FileWriter(f));
-        while( (line=reader.readLine())!=null ) {
-            writer.write(line);
-            writer.newLine();
-        }
-        reader.close();
-        writer.close();
-    }
-
-    /**
-     * download a file given its url, and save it into 'data' subfolder
-     * of current program working directory; name of the file will be randomly generated,
-     * having prefix 'tmp' and suffix 'xml'
-     * @param url url of file to be downloaded
-     * @return name of the file created
-     * @throws Exception
-     */
-    public File downloadFile(String url) throws Exception {
-
-        int maxDownloadRetryCount = 8;
-        ESearchResult eSearchResult = new ESearchResult();
-        eSearchResult.fetchQuery = url;
-        return downloadFile(maxDownloadRetryCount, eSearchResult);
-    }
-
-    /**
-     * download a file given its url, and save it into 'data' subfolder
-     * of current program working directory; name of the file will be randomly generated,
-     * having prefix 'tmp' and suffix 'xml'
-     * @param maxRetryCount maximum number of attempts made to download the file
-     * @return name of the file created
-     * @throws Exception
-     */
-    public File downloadFile(int maxRetryCount, ESearchResult eSearchResult) throws Exception {
-
-        // download the file to a tmp file
+    private File downloadToTempFile(String url) throws Exception {
         FileDownloader downloader = new FileDownloader();
-        downloader.setMaxRetryCount(maxRetryCount);
-        downloader.setDownloadRetryInterval(20); // set timeout between next download attempt to 20s
+        downloader.setMaxRetryCount(8);
+        downloader.setDownloadRetryInterval(20);
 
-        File tmpFile = File.createTempFile("tmp", "xml", new File("/tmp"));
-        eSearchResult.localFile = tmpFile.getAbsolutePath();
+        File tmpFile = File.createTempFile("ncbi", ".xml");
+        downloader.setExternalFile(url);
+        downloader.setLocalFile(tmpFile.getAbsolutePath());
 
-        downloader.setExternalFile(eSearchResult.fetchQuery);
-        downloader.setLocalFile(eSearchResult.localFile);
-
-        System.out.println(URLDecoder.decode(eSearchResult.fetchQuery, "UTF-8"));
+        logger.debug("Downloading: {}", url);
         downloader.download();
 
         return tmpFile;
     }
 
-    public String geteUtils_db() {
-        return eUtils_db;
+    private void removeDocType(File file) throws IOException {
+        File tmpFile = File.createTempFile("nodoctype", ".xml");
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tmpFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.startsWith("<!DOCTYPE")) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+        }
+
+        // Copy back to original file
+        try (BufferedReader reader = new BufferedReader(new FileReader(tmpFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+
+        tmpFile.delete();
     }
 
-    public void seteUtils_db(String eUtils_db) {
-        this.eUtils_db = eUtils_db;
+    private String xpathString(Document doc, String expression) throws Exception {
+        return new XOMXPath(expression).stringValueOf(doc);
     }
 
-    public String geteUtils_tool() {
-        return eUtils_tool;
+    public static int getTagCount(File file, String tag) throws Exception {
+        int count = 0;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(tag)) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
-    public void seteUtils_tool(String eUtils_tool) {
-        this.eUtils_tool = eUtils_tool;
-    }
-
-    public String geteUtils_email() {
-        return eUtils_email;
-    }
-
-    public void seteUtils_email(String eUtils_email) {
-        this.eUtils_email = eUtils_email;
-    }
-
-    public String getNcbiFetchUrl() {
-        return ncbiFetchUrl;
-    }
-    public void setNcbiFetchUrl(String ncbiFetchUrl) {
-        this.ncbiFetchUrl = ncbiFetchUrl;
-    }
-    public String getNcbiSearchUrl() {
-        return ncbiSearchUrl;
-    }
-    public void setNcbiSearchUrl(String ncbiSearchUrl) {
-        this.ncbiSearchUrl = ncbiSearchUrl;
-    }
-
+    // Setters
+    public void seteUtils_db(String db) { this.eUtils_db = db; }
+    public void seteUtils_tool(String tool) { this.eUtils_tool = tool; }
+    public void seteUtils_email(String email) { this.eUtils_email = email; }
+    public void setNcbiSearchUrl(String url) { this.ncbiSearchUrl = url; }
+    public void setNcbiFetchUrl(String url) { this.ncbiFetchUrl = url; }
 
     /**
-     * holds all information relevant in the result from eSearch query
+     * Result from eSearch query.
      */
     public class ESearchResult {
-
         public String recordCount;
         public String queryKey;
         public String webEnv;
-        public String queryTranslation; // actual query returned from eUtils
-        public String queryOriginal; // original query sent to eUtils
-        public String xml; // raw response from eSearch in xml format
+        public String queryTranslation;
+        public String queryOriginal;
+        public String xml;
         public List<String> ids;
-        public String fetchQuery; // filled up by NcbiEutils.runEFetch
-        public int fetchedCount; // count of records actually fetched by eFetch query
+        public String fetchQuery;
+        public int fetchedCount;
         public int totalFetchedCount;
-        public String localFile; // name of local file where contents downloaded via eUtils is stored
     }
 }
