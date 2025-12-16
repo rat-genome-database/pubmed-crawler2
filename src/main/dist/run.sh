@@ -4,7 +4,7 @@
 #
 . /etc/profile
 MYJAVA="java -Xms512m -Xmx20480m"
-APP_DIR=/home/rgddata/pipelines/PubMedCrawler2
+APP_DIR=/rgd/pubmed/PubMedCrawler2
 DATA_DIR=$APP_DIR/pubmed/
 
 cd $APP_DIR

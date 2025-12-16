@@ -41,13 +41,7 @@ public class PubMedLibrary {
             printUsage();
             return;
         }
-
-        for (int i = 0; i < args.length; i++) {
-            if ("--crawlByDate".equals(args[i])) {
-                crawlByDate(args);
-                return;
-            }
-        }
+        crawlByDate(args);
 
         printUsage();
     }
