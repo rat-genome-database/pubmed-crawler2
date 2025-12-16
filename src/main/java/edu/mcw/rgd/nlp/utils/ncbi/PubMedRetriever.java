@@ -23,9 +23,10 @@ public class PubMedRetriever {
     private NcbiEutils eUtils;
 
     public void initialize() {
+        String PUBMED_REGISTERED_EMAIL_ID = System.getenv("PUBMED_REGISTERED_EMAIL_ID");
         eUtils = new NcbiEutils();
         eUtils.seteUtils_db(DB_NAME);
-        eUtils.seteUtils_email("mtutaj@mcw.edu");
+        eUtils.seteUtils_email(PUBMED_REGISTERED_EMAIL_ID);
         eUtils.seteUtils_tool("pubmed_crawler");
         eUtils.setNcbiSearchUrl("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi");
         eUtils.setNcbiFetchUrl("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi");
