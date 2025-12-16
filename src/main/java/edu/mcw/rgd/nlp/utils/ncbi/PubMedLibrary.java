@@ -16,9 +16,10 @@ import java.util.List;
 /**
  * PubMed Abstract Crawler - Downloads PubMed abstracts daily from NCBI.
  *
- * Usage: java -jar pubmed-crawler.jar --crawlByDate &lt;outputDir&gt; &lt;startDate&gt; &lt;endDate&gt;
+ * Usage: java -jar pubmed-crawler.jar --crawlByDate &lt;outputDir&gt; [&lt;startDate&gt; &lt;endDate&gt;]
  *
  * Date format: yyyy/MM/dd
+ * If startDate and endDate are omitted, defaults to current day.
  *
  * Output structure:
  *   outputDir/
@@ -48,14 +49,16 @@ public class PubMedLibrary {
 
     private static void printUsage() {
         System.out.println("PubMed Abstract Crawler");
-        System.out.println("Usage: --crawlByDate <outputDir> <startDate> <endDate>");
+        System.out.println("Usage: --crawlByDate <outputDir> [<startDate> <endDate>]");
         System.out.println("  Date format: yyyy/MM/dd");
+        System.out.println("  If dates are omitted, defaults to current day");
         System.out.println("  Example: --crawlByDate ./data 2025/01/01 2025/01/31");
+        System.out.println("  Example: --crawlByDate ./data  (crawls current day)");
     }
 
     public static void crawlByDate(String[] args) {
-        if (args.length < 4) {
-            logger.error("Insufficient arguments. Usage: --crawlByDate <outputDir> <startDate> <endDate>");
+        if (args.length < 2) {
+            logger.error("Insufficient arguments. Usage: --crawlByDate <outputDir> [<startDate> <endDate>]");
             return;
         }
 
@@ -63,18 +66,25 @@ public class PubMedLibrary {
         LocalDate startDate;
         LocalDate endDate;
 
-        try {
-            startDate = LocalDate.parse(args[2], DATE_FORMAT);
-        } catch (DateTimeParseException e) {
-            logger.error("Invalid start date: {}. Expected format: yyyy/MM/dd", args[2]);
-            return;
-        }
+        // If dates are not provided, default to current day
+        if (args.length < 4) {
+            startDate = LocalDate.now();
+            endDate = LocalDate.now();
+            logger.info("No dates provided, defaulting to current day: {}", startDate.format(DATE_FORMAT));
+        } else {
+            try {
+                startDate = LocalDate.parse(args[2], DATE_FORMAT);
+            } catch (DateTimeParseException e) {
+                logger.error("Invalid start date: {}. Expected format: yyyy/MM/dd", args[2]);
+                return;
+            }
 
-        try {
-            endDate = LocalDate.parse(args[3], DATE_FORMAT);
-        } catch (DateTimeParseException e) {
-            logger.error("Invalid end date: {}. Expected format: yyyy/MM/dd", args[3]);
-            return;
+            try {
+                endDate = LocalDate.parse(args[3], DATE_FORMAT);
+            } catch (DateTimeParseException e) {
+                logger.error("Invalid end date: {}. Expected format: yyyy/MM/dd", args[3]);
+                return;
+            }
         }
 
         try {
